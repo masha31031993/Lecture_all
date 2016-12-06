@@ -171,7 +171,9 @@ QVariant LectureModel::data(const QModelIndex &index, int role) const
             {
                 QPixmap pixmap = QPixmap::fromImage(image);
                 //QPixmap pixmap = QPixmap::load((itemIndex->data)->name);
-                return pixmap;
+                //return pixmap;
+
+                return QUrl::fromLocalFile(itemIndex->data->name);
             }
         }
     }

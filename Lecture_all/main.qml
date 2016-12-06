@@ -31,6 +31,7 @@ ApplicationWindow{
                 text: qsTr("&Добавить изображение")
             }
         }
+
         Menu{
             title: qsTr("Печать")
             MenuItem{
@@ -53,10 +54,11 @@ ApplicationWindow{
                         role: "display"
                         width:500
                     }
-            /*MouseArea {
-                anchors.fill: parent
-                id: mouseArea_1
-            }*/
+   onDoubleClicked: {
+       if(model.data(index,1)){
+           image.source=model.data(index,1);
+       }
+   }
         }
 
         Button {
@@ -102,6 +104,7 @@ ApplicationWindow{
             width: 376
             height: 365
 
+
             MouseArea {
                 // действуем в пределах всего элемента Image
                 anchors.fill: parent
@@ -112,5 +115,6 @@ ApplicationWindow{
                 anchors.topMargin: 36
             }
         }
+
 
    }
