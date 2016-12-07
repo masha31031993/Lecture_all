@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     view.setWindowTitle("Tree model");
     view.show();*/
 // приложение
-    LectureModel *ip = new LectureModel("../LecturesDB");
+    LectureModel *ip = new LectureModel("../git/LecturesDB");
     QQmlEngine engine;
     engine.rootContext()->setContextProperty("myModel", ip);
     QQmlComponent component(&engine, QUrl("qrc:/main.qml"));
