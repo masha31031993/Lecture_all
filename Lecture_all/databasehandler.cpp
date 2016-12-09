@@ -25,10 +25,6 @@ void DataBaseHandler::ConnectDataBase()
     }
 }
 
-
-
-
-
 QString DataBaseHandler::getDbName()
 {
     return dbName;

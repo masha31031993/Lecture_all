@@ -9,7 +9,7 @@ ApplicationWindow{
     width: 640
     height: 480
     color: "#55aaff"
-    title: qsTr("Лекции")
+   title: qsTr("Лекции")
 
     menuBar: MenuBar {
         /*Menu {
@@ -21,6 +21,9 @@ ApplicationWindow{
         }*/
         Menu {
             title: qsTr("Добавить")
+            MenuItem {
+                text: qsTr("&Добавить семестр")
+            }
             MenuItem {
                 text: qsTr("&Добавить предмет")
             }
@@ -50,7 +53,7 @@ ApplicationWindow{
             height: 374
             model: myModel
             TableViewColumn{
-                        title:"Курсы"
+                        title:"Семестры"
                         role: "display"
                         width:500
                     }

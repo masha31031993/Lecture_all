@@ -1,6 +1,5 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
-//#include <sqlite3.h>
 #include <QtSql/QSqlDatabase>
 #include <QDebug>
 #include <QtSql>
@@ -42,7 +41,7 @@ int main(int argc, char *argv[])
     view.setWindowTitle("Tree model");
     view.show();*/
 // приложение
-    LectureModel *ip = new LectureModel("../git/LecturesDB");
+    LectureModel *ip = new LectureModel("../LecturesDB");
     QQmlEngine engine;
     engine.rootContext()->setContextProperty("myModel", ip);
     QQmlComponent component(&engine, QUrl("qrc:/main.qml"));
