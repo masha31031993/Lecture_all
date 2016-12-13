@@ -50,12 +50,20 @@ public:
     bool canFetchMore(const QModelIndex &parent) const override;
     void fetchMore(const QModelIndex &parent);
     bool hasChildren(const QModelIndex &parent) const;
+   // bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild);
+
+    //Добавление новых строк в БД и модель
+
+    void insertTerm(int termNum);
 
 private:
 
     QString dbName;
     DataBaseHandler *dataBase;
     DataWrapper* root;
+
+    //активируем функцию перетаскивания
+
 
 };
 

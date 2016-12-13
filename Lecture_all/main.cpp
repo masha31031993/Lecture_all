@@ -13,19 +13,18 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    /*DataBaseHandler* testhand = new DataBaseHandler("../LecturesDB");
-    testhand->printPictures_info();
-    qDebug() << testhand->getRowCountOfChild(1);
+    //DataBaseHandler* testhand = new DataBaseHandler("../LecturesDB");
+    //testhand->insertIntoSubjects_and_themes(100,7,3,"NewSubj",10,89);
+    //testhand->printPictures_info();
+    //testhand->deleteFromPictures_info(133);
+    //testhand->printSubjects_and_themes();
+    //testhand->deleteFromSubjects_and_themes(100);
+    //testhand->insertIntoPictures_info(133, "NewTag", "New Comment", "It is the path", 1,5);
+    //testhand->updateParAndNumSubjects_and_themes(3,0,2);
+    //testhand->changeTermSerialNumber(3);
+    //qDebug() << testhand->hasTerm(5);
 
-    QString str_insert = "INSERT INTO my_table(number, address, age) "
-                         "VALUES (%1, '%2', %3);";
-    str = str_insert.arg("14")
-                    .arg("hello world str.")
-                    .arg("37");
-    b = a_query.exec(str);
-    if (!b) {
-        qDebug() << "Кажется данные не вставляются, проверьте дверь, может она закрыта?";*/
-
+    //qDebug() << testhand->getFreeIdInS_T();
     /*QApplication a(argc, argv);
 
   // Вывод формы

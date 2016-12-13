@@ -47,7 +47,7 @@ LectureModel::LectureModel(QString dbPath, QObject *parent)
 LectureModel::~LectureModel()
 {
     //Need implement!!!
-    //delete root;
+    delete root;
 }
 
 QVariant LectureModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -153,14 +153,12 @@ QVariant LectureModel::data(const QModelIndex &index, int role) const
         case TERM:
         case COURSE:
         case THEME:{
-            DataWrapper *item = static_cast<DataWrapper*>(index.internalPointer());
-            return (item->data->name);
+            return (itemIndex->data->name);
             break;}
         default:
+            return (itemIndex->data->name);
             break;
-        }
-        DataWrapper *item = static_cast<DataWrapper*>(index.internalPointer());
-        return (item->data->name);
+        }  
     }
 
     if(role == Qt::DecorationRole)
@@ -169,7 +167,7 @@ QVariant LectureModel::data(const QModelIndex &index, int role) const
             QImage image((itemIndex->data)->name);
             if(!image.isNull())
             {
-                QPixmap pixmap = QPixmap::fromImage(image);
+                //QPixmap pixmap = QPixmap::fromImage(image);
                 //QPixmap pixmap = QPixmap::load((itemIndex->data)->name);
                 //return pixmap;
 
@@ -208,18 +206,21 @@ void LectureModel::fetchMore(const QModelIndex &parent)
     {
         dw = new DataWrapper;
         iData = new IData;
-        dw->type = static_cast<h_type>(query.value(rec.indexOf("Type")).toInt());
-        dw->id = query.value(rec.indexOf("Id_subj")).toInt();
-        dw->number = query.value(rec.indexOf("Serial_number")).toInt();
         if(parentItem->type != THEME)
         {
             iData->name = query.value(rec.indexOf("Name_subj")).toString();
+            dw->type = static_cast<h_type>(query.value(rec.indexOf("Type")).toInt());
+            dw->number = query.value(rec.indexOf("Serial_number")).toInt();
+            dw->id = query.value(rec.indexOf("Id_subj")).toInt();
         }
         else
         {
             iData->name = query.value(rec.indexOf("Image_path")).toString();
             iData->comment = query.value(rec.indexOf("Comment")).toString();
             iData->tags = query.value(rec.indexOf("Tags")).toString();
+            dw->type = IMAGE;
+            dw->number = query.value(rec.indexOf("Number")).toInt();
+            dw->id = query.value(rec.indexOf("Id_image")).toInt();
         }
         dw->data = iData;
         dw->parent = parentItem;
@@ -252,3 +253,50 @@ bool LectureModel::canFetchMore(const QModelIndex &parent) const
     const DataWrapper* parentItem = static_cast<DataWrapper*>(parent.internalPointer());
     return (parentItem->count > parentItem->children.size());
 }
+
+/*bool LectureModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+{
+    if(!sourceParent.isValid())
+    {
+        return false;
+    }
+    if(!destinationParent.isValid())
+    {
+        return false;
+    }
+
+    int row_count = sourceRow + count - 1;
+    DataWrapper* childItem;
+    DataWrapper* parentItem = static_cast<DataWrapper*>(destinationParent.internalPointer());
+    beginMoveRows(sourceParent,sourceRow, row_count, destinationParent, destinationChild);
+    for(int i = 0; i < count; i++)
+    {
+        childItem = static_cast<DataWrapper*>((sourceParent.child(sourceRow + i,0)).internalPointer());
+        childItem->number = destinationChild + i;
+        childItem->parent = parentItem;
+        //childItem->type = parentItem->type + 1;
+        parentItem->children.append(childItem);
+        dataBase->updateParAndNumSubjects_and_themes(childItem->id,(childItem->parent)->id,childItem->number);
+    }
+    endMoveRows();
+}*/
+
+void LectureModel::insertTerm(int term)
+{
+    if(!dataBase->hasTerm(term))
+    {
+        int newIdSubj = dataBase->getFreeIdInS_T();
+        int newSerialNumber = dataBase->getTermSerialNumber(term);
+        dataBase->insertIntoSubjects_and_themes(newIdSubj,term,1,"0",newSerialNumber,0);
+        dataBase->changeTermSerialNumber(term);
+    }
+    else
+    {
+        qDebug() << "Семестр уже имеется";
+    }
+}
+
+
+
+
+
