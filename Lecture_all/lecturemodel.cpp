@@ -161,6 +161,7 @@ QVariant LectureModel::data(const QModelIndex &index, int role) const
         }
         DataWrapper *item = static_cast<DataWrapper*>(index.internalPointer());
         return (item->data->name);
+        //return (item->data->comment); //выводится будет комментарий
     }
 
     if(role == Qt::DecorationRole)
