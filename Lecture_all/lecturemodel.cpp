@@ -289,6 +289,7 @@ void LectureModel::insertTerm(int term)
         int newSerialNumber = dataBase->getTermSerialNumber(term);
         dataBase->insertIntoSubjects_and_themes(newIdSubj,term,1,"0",newSerialNumber,0);
         dataBase->changeTermSerialNumber(term);
+        idForInsert = newIdSubj;
     }
     else
     {
@@ -296,7 +297,57 @@ void LectureModel::insertTerm(int term)
     }
 }
 
+bool LectureModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex)
+{
+    if(!parent.isValid())
+    {
+        return false;
+    }
 
+    DataWrapper* parentItem = static_cast<DataWrapper*>(parent.internalPointer());
+
+    beginInsertRows(parent,row, row + count - 1);
+
+    QSqlQuery query;
+    if(parentItem->type != THEME)
+    {
+        query.exec(QString("SELECT * FROM subjects_and_themes WHERE (Id_subj >= %1)").arg(QString::number(idForInsert)));
+    }
+    else
+    {
+        query.exec(QString("SELECT * FROM pictures_info WHERE (Id_image >= %1)").arg(QString::number(idForInsert)));
+    }
+    QSqlRecord rec = query.record();
+    DataWrapper* dw;
+    IData *iData;
+    while (query.next())
+    {
+        dw = new DataWrapper;
+        iData = new IData;
+        if(parentItem->type != THEME)
+        {
+            iData->name = query.value(rec.indexOf("Name_subj")).toString();
+            dw->type = static_cast<h_type>(query.value(rec.indexOf("Type")).toInt());
+            dw->number = query.value(rec.indexOf("Serial_number")).toInt();
+            dw->id = query.value(rec.indexOf("Id_subj")).toInt();
+        }
+        else
+        {
+            iData->name = query.value(rec.indexOf("Image_path")).toString();
+            iData->comment = query.value(rec.indexOf("Comment")).toString();
+            iData->tags = query.value(rec.indexOf("Tags")).toString();
+            dw->type = IMAGE;
+            dw->number = query.value(rec.indexOf("Number")).toInt();
+            dw->id = query.value(rec.indexOf("Id_image")).toInt();
+        }
+        dw->data = iData;
+        dw->parent = parentItem;
+        dw->count = dataBase->getRowCountOfChild(dw->id, dw->type);
+        parentItem->children.append(dw);
+
+    }
+    endInsertRows();
+}
 
 
 

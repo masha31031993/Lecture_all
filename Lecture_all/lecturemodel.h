@@ -54,6 +54,7 @@ public:
 
     //Добавление новых строк в БД и модель
 
+    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex);
     void insertTerm(int termNum);
 
 private:
@@ -61,6 +62,7 @@ private:
     QString dbName;
     DataBaseHandler *dataBase;
     DataWrapper* root;
+    int idForInsert;
 
     //активируем функцию перетаскивания
 
