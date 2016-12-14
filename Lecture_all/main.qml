@@ -39,6 +39,20 @@ ApplicationWindow{
                 onTriggered: item_image.visible=true
             }
         }
+        Menu {
+            title: qsTr("Обработка")
+            MenuItem {
+                text: qsTr("&Оттенки серого")
+            }
+            MenuItem {
+                text: qsTr("&Гауссовое размытие")
+                //onTriggered:
+            }
+            MenuItem {
+                text: qsTr("&Деление")
+
+            }
+        }
 
         Menu{
             title: qsTr("Печать")
@@ -67,7 +81,7 @@ ApplicationWindow{
         onDoubleClicked: {
             if(model.data(index,1)){
                 image.source=model.data(index,1);
-                label2.text=model.data(index,0);///?????
+                //label2.text=model.data(index,1);///?????
             }
         }
     }
@@ -121,7 +135,9 @@ ApplicationWindow{
         width: 376
         height: 374
 
-        MouseArea {
+
+
+       /* MouseArea {
             // действуем в пределах всего элемента Image
             anchors.fill: parent
             id: mouseArea_2
@@ -129,7 +145,7 @@ ApplicationWindow{
             anchors.bottomMargin: 0
             anchors.leftMargin: 0
             anchors.topMargin: 0
-        }
+        }*/
     }
 
     Rectangle {
@@ -174,10 +190,10 @@ ApplicationWindow{
 
     Rectangle {
         id: item_subject
-        x: 132
-        y: 160
-        width: 377
-        height: 132
+        x: 109
+        y: 121
+        width: 429
+        height: 238
         visible: false
         color: "#55aaff"
         border.width: 1
@@ -194,8 +210,8 @@ ApplicationWindow{
 
         Button {
             id: button_ok1
-            x: 151
-            y: 82
+            x: 172
+            y: 192
             text: qsTr("ОК")
             onClicked: label1.text=textField_subject.text //Берет текст и выводит на label
 
@@ -203,8 +219,8 @@ ApplicationWindow{
 
         Button {
             id: button_close1
-            x: 348
-            y: 1
+            x: 398
+            y: 3
             width: 28
             height: 27
             iconSource: "close.png"
@@ -213,12 +229,23 @@ ApplicationWindow{
 
         Label {
             id: label1
-            x: 30
-            y: 77
+            x: 29
+            y: 182
             width: 79
             height: 32
 
         }
+
+       /* TableView {
+            id: tableView_subject
+            x: 21
+            y: 96
+            width: 387
+            height: 80
+
+
+
+        }*/
     }
 
     Rectangle {
@@ -309,6 +336,5 @@ ApplicationWindow{
         y: 420
         width: 242
         height: 27
-
     }
 }
