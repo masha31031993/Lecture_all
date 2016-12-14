@@ -163,7 +163,11 @@ ApplicationWindow{
             x: 151
             y: 82
             text: qsTr("ОК")
-            //onclicked:
+            onClicked: {
+                myModel.insertTerm(textField_term.text);
+                item_term.visible=false;
+             //reset
+               }
         }
 
         Button {
@@ -236,13 +240,19 @@ ApplicationWindow{
 
         }
 
-       /* TableView {
+       /*TableView {
             id: tableView_subject
             x: 21
             y: 96
             width: 387
             height: 80
+            model: myModel
 
+         TableViewColumn {
+                title:"Семестры"
+                role: "display"
+                width:500
+            }
 
 
         }*/

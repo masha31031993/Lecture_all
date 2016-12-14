@@ -16,7 +16,7 @@ LectureModel::LectureModel(QString dbPath, QObject *parent)
     //root->parent = qobject_cast<DataWrapper*>(parent);
     DataWrapper* dw;
     QSqlQuery query;
-    if (!query.exec("SELECT * FROM subjects_and_themes")) {
+    if (!query.exec("SELECT * FROM subjects_and_themes ORDER BY Term")) {
         qDebug() << "Невозможно извлечь данные из subjects_and_themes";
     }
     else
@@ -280,8 +280,13 @@ bool LectureModel::canFetchMore(const QModelIndex &parent) const
     endMoveRows();
 }*/
 
-void LectureModel::insertTerm(int term)
+void LectureModel::insertTerm(/*int term*/QString sterm)
 {
+    bool ok;
+    //int term = sterm.toInt(&ok,10);
+    int term = sterm.toInt();
+    if (ok=false)
+        qDebug()<<"Не преобразовалось";
     if(!dataBase->hasTerm(term))
     {
         int newIdSubj = dataBase->getFreeIdInS_T();
