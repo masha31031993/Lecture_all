@@ -304,5 +304,35 @@ void DataBaseHandler::changeTermSerialNumber(int term)
     }
 }
 
+int DataBaseHandler::getIdTerm(QString term)
+{
+    QString strSelect = "SELECT Id_subj FROM Subjects_and_themes WHERE Term = %1";
+    QString strQuery = strSelect.arg(term);
 
+    QSqlQuery query;
+    int termId = -1;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу найти id";
+        return termId;
+    }
+
+    if(query.next())
+    {
+        termId = query.value(0).toInt();
+    }
+
+    return termId;
+}
+
+int DataBaseHandler::getSubjSerialNumber(int idParent)
+{
+
+
+    QSqlQuery query;
+    int serialNumber = getRowCountOfChild(idParent, 2);
+
+
+    return serialNumber;
+}
 

@@ -6,6 +6,7 @@
 #include <QModelIndex>
 #include <QVariant>
 
+#include "new_model_roles.h"
 
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
 
@@ -50,17 +51,23 @@ public:
     bool canFetchMore(const QModelIndex &parent) const override;
     void fetchMore(const QModelIndex &parent);
     bool hasChildren(const QModelIndex &parent) const;
-   // bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild);
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild);
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    //Qt::DropAction supportedDropActions() const;
 
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
     //Добавление новых строк в БД и модель
-
-    void insertTerm(int termNum);
+    bool insertRows(int row, int count, const QModelIndex &parent);
+    Q_INVOKABLE void insertTerm(QString sterm);
+    Q_INVOKABLE void insertSubject(QString term, QString newSubject);
+    //Q_INVOKABLE void insertTheme(QString term, QString subject, QString newTheme);
 
 private:
 
     QString dbName;
     DataBaseHandler *dataBase;
     DataWrapper* root;
+    int idForInsert;
 
     //активируем функцию перетаскивания
 

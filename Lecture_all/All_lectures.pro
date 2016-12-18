@@ -19,4 +19,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     databasehandler.h \
-    lecturemodel.h
+    lecturemodel.h \
+    new_model_roles.h

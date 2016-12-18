@@ -54,6 +54,12 @@ public:
 
     //изменение порядкового номера у семестров, больших данного term
     void        changeTermSerialNumber(int term);
+
+    //получение id данного семестра
+    int         getIdTerm(QString term);
+    
+    //получение нового порядкового номера для предмета
+    int         getSubjSerialNumber(int idParent);
 };
 
 #endif // DATABASEHANDLER_H
