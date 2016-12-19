@@ -51,8 +51,8 @@ ApplicationWindow{
             title: qsTr("Обработка")
             MenuItem {
                 text: qsTr("&Оттенки серого")
-                 onTriggered:
-                     image = model.grayColor(image);
+                 //onTriggered:
+                     //image = model.grayColor(image);
                      //image.source =
             }
             MenuItem {
@@ -147,8 +147,9 @@ ApplicationWindow{
                 onDoubleClicked: {
                     var index_image = parent.indexAt(mouse.x, mouse.y);
                     if(treeView.model.data(index_image,1)) {
-                        image.source = treeView.model.data(index_image,1);
-                        label_name.text = treeView.model.data(index_image,0);
+                        image.source = parent.model.data(index_image,1);
+                        label_name.text = parent.model.data(index_image,0);
+
                     }
                 }
         }
@@ -176,7 +177,10 @@ ApplicationWindow{
             width: 28
             height: 27
             iconSource: "left.png"
-            onClicked: image.rotation -=90
+            onClicked: {
+                //image.rotation -=90
+                myModel.rotationLeft(label_name.text);
+            }
             // вызвать добавление в базу нового изображения
         }
 

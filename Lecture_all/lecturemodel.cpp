@@ -1,5 +1,6 @@
 #include "lecturemodel.h"
 #include <QImage>
+#include <QImageWriter>
 
 LectureModel::LectureModel(QString dbPath, QObject *parent)
     : QAbstractItemModel(parent)
@@ -353,3 +354,18 @@ void LectureModel::insertTerm(QString sterm)
     endInsertRows();
 }*/
 
+
+/*void LectureModel:: saveImage(QString str) {
+
+    QImage img = pimg.toImage();
+    QImageWriter writer(str);
+   // writer.setFileName(str);
+    writer.setFormat("PNG");
+    writer.write(img);
+    if (writer.canWrite() == false)
+        qDebug() << "Файл не записался";
+}*/
+
+void LectureModel::rotationLeft(QString str) {
+
+}

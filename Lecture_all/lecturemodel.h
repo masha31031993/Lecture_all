@@ -56,6 +56,8 @@ public:
 
    //  bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex);
     Q_INVOKABLE void insertTerm(QString sterm);
+    //Q_INVOKABLE void saveImage(QPixmap img, QString str);
+    Q_INVOKABLE void rotationLeft(QString str);
 
 
 private:
