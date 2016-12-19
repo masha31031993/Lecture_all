@@ -55,7 +55,8 @@ public:
     //Добавление новых строк в БД и модель
 
    //  bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex);
- Q_INVOKABLE   void insertTerm(/*int termNum*/QString sterm);
+    Q_INVOKABLE void insertTerm(QString sterm);
+
 
 private:
 

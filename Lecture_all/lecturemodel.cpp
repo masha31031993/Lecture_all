@@ -1,4 +1,5 @@
 #include "lecturemodel.h"
+#include <QImage>
 
 LectureModel::LectureModel(QString dbPath, QObject *parent)
     : QAbstractItemModel(parent)
@@ -146,31 +147,31 @@ QVariant LectureModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     DataWrapper* itemIndex = static_cast<DataWrapper*>(index.internalPointer());
-
-    if(role == Qt::DisplayRole)
-    {
+    if(role == Qt::DisplayRole) {
         switch (itemIndex->type) {
         case TERM:
         case COURSE:
         case THEME:{
             return (itemIndex->data->name);
             break;}
-        default:
-            return (itemIndex->data->name);
+        default: {
+            int pos;
+            QString path;
+            path = itemIndex->data->name;
+            pos = path.lastIndexOf('/') + 1;
+            return path.mid(pos, path.lastIndexOf('.') - pos);
             break;
+        }
         }
     }
 
-    if(role == Qt::DecorationRole)
-    {
-        if(itemIndex->type == IMAGE){
+    if(role == Qt::DecorationRole) {
+        if(itemIndex->type == IMAGE) {
             QImage image((itemIndex->data)->name);
-            if(!image.isNull())
-            {
+            if(!image.isNull()) {
                 //QPixmap pixmap = QPixmap::fromImage(image);
                 //QPixmap pixmap = QPixmap::load((itemIndex->data)->name);
                 //return pixmap;
-
                 return QUrl::fromLocalFile(itemIndex->data->name);
             }
         }
@@ -280,12 +281,11 @@ bool LectureModel::canFetchMore(const QModelIndex &parent) const
     endMoveRows();
 }*/
 
-void LectureModel::insertTerm(/*int term*/QString sterm)
+void LectureModel::insertTerm(QString sterm)
 {
     bool ok;
-    //int term = sterm.toInt(&ok,10);
-    int term = sterm.toInt();
-    if (ok=false)
+    int term = sterm.toInt(&ok,10);
+    if (ok == false)
         qDebug()<<"Не преобразовалось";
     if(!dataBase->hasTerm(term))
     {
@@ -352,3 +352,4 @@ void LectureModel::insertTerm(/*int term*/QString sterm)
     }
     endInsertRows();
 }*/
+
