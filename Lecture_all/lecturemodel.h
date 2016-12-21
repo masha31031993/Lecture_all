@@ -6,7 +6,6 @@
 #include <QModelIndex>
 #include <QVariant>
 
-#include "new_model_roles.h"
 
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
 
@@ -56,11 +55,14 @@ public:
     //Qt::DropAction supportedDropActions() const;
 
     bool setData(const QModelIndex &index, const QVariant &value, int role);
+
     //Добавление новых строк в БД и модель
     bool insertRows(int row, int count, const QModelIndex &parent);
     Q_INVOKABLE void insertTerm(QString sterm);
     Q_INVOKABLE void insertSubject(QString term, QString newSubject);
     //Q_INVOKABLE void insertTheme(QString term, QString subject, QString newTheme);
+
+
 
 private:
 
@@ -68,6 +70,14 @@ private:
     DataBaseHandler *dataBase;
     DataWrapper* root;
     int idForInsert;
+
+   static const int INSERT_ID_ROLE = Qt::UserRole + 1;
+   static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;
+   static const int INSERT_NAME_ROLE = Qt::UserRole + 3;
+   static const int INSERT_TAG_ROLE = Qt::UserRole + 4;
+   static const int INSERT_COMMENT_ROLE = Qt::UserRole + 5;
+   static const int INSERT_TERM_ROLE = Qt::UserRole + 6;
+   static const int INSERT_PARENT_ID_ROLE = Qt::UserRole + 7;
 
     //активируем функцию перетаскивания
 

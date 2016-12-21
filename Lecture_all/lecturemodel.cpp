@@ -285,12 +285,21 @@ void LectureModel::insertTerm(QString strTerm)
     {
         int newIdSubj = dataBase->getFreeIdInS_T();
         int newSerialNumber = dataBase->getTermSerialNumber(term);
+
         QModelIndex index = this->index(0,0,QModelIndex());
         //dataBase->insertIntoSubjects_and_themes(newIdSubj,term,1,"0",newSerialNumber,0);
         //dataBase->changeTermSerialNumber(term);
         insertRows(newSerialNumber,1,index);
-        //setData(index, newIdSubj, Qt::DecorationPropertyRole);
-        //setData();Model.index(row,0,root);
+        QModelIndex updateIndex = this->index(newSerialNumber,0,QModelIndex());
+        //
+        //setData(updateIndex, newIdSubj, INSERT_ID_ROLE);
+        setData(updateIndex, 1, INSERT_TYPE_ROLE);
+        setData(updateIndex, newIdSubj, INSERT_ID_ROLE);
+        setData(updateIndex, term, INSERT_NAME_ROLE);
+        setData(updateIndex, term, INSERT_TERM_ROLE);
+        setData(updateIndex, 0, INSERT_PARENT_ID_ROLE);
+
+        dataBase->changeTermSerialNumber(term);
     }
     else
     {
@@ -300,72 +309,80 @@ void LectureModel::insertTerm(QString strTerm)
 //setData()//
 bool LectureModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (index.isValid() && role == Qt::DecorationPropertyRole)
+    //DataWrapper* parentItem;
+    DataWrapper* dw = static_cast<DataWrapper*>(index.internalPointer());
+    QString name, tag, comment;
+    int id, type, term, parentId;
+    bool resultOfUpdate = false;
+    switch(role)
     {
-        qDebug() << "1";
-        int id = value.toInt();
-        QString strSearch = "SELECT * FROM subjects_and_themes WHERE Id_subj = %1;";
-        QString strQuery = strSearch.arg(id);
-        QSqlQuery query;
-        if(!query.exec(strQuery))
+    case INSERT_NAME_ROLE:
+        name = value.toString();
+        dw->data->name = name;
+        resultOfUpdate = dataBase->updateName(-1, name);
+        break;
+    case INSERT_ID_ROLE:
+        id = value.toInt();
+        dw->id = id;
+        dw->number = index.row();
+        dw->count = 0;
+        resultOfUpdate = dataBase->updateId(-1,id);
+        break;
+    case INSERT_TAG_ROLE:
+        tag = value.toString();
+        dw->data->tags = tag;
+        break;
+    case INSERT_COMMENT_ROLE:
+        comment = value.toString();
+        dw->data->comment = comment;
+        break;
+    case INSERT_TYPE_ROLE:
+        type = value.toInt();
+        dw->type = static_cast<h_type>(type);
+        if(type == 1)
         {
-            qDebug() << "Не рабит чё т";
-            return false;
-        }
-        QSqlRecord rec = query.record();
-        DataWrapper* parentItem = (static_cast<DataWrapper*>(index.internalPointer()))->parent;
-        DataWrapper* dw;
-        IData *iData;
-        if(query.next())
-        {
-            qDebug() << "2";
-            dw = new DataWrapper;
-            iData = new IData;
-            //if(parentItem->type != THEME)
-            //{
-                iData->name = query.value(rec.indexOf("Name_subj")).toString();
-                dw->type = static_cast<h_type>(query.value(rec.indexOf("Type")).toInt());
-                dw->number = query.value(rec.indexOf("Serial_number")).toInt();
-                dw->id = id;
-            //}
-            /*else
-            {
-                iData->name = query.value(rec.indexOf("Image_path")).toString();
-                iData->comment = query.value(rec.indexOf("Comment")).toString();
-                iData->tags = query.value(rec.indexOf("Tags")).toString();
-                dw->type = IMAGE;
-                dw->number = query.value(rec.indexOf("Number")).toInt();
-                dw->id = query.value(rec.indexOf("Id_image")).toInt();
-            }*/
-            dw->data = iData;
-            dw->parent = parentItem;
-            dw->count = 0;
-            parentItem->children.replace(dw->number,dw);
-
+            dw->parent = root;
         }
         else
         {
-            return false;
+           // dw->parent = static_cast<DataWrapper*>(index.parent().internalPointer());
         }
-        //stringList.replace(index.row(), value.toString());
-        emit dataChanged(index, index);
-        return true;
+        resultOfUpdate = dataBase->updateType(-1, type);
+        break;
+    case INSERT_TERM_ROLE:
+        term = value.toInt();
+        resultOfUpdate = dataBase->updateTerm(-1,term);
+        break;
+    case INSERT_PARENT_ID_ROLE:
+        parentId = value.toInt();
+        resultOfUpdate = dataBase->updateParentId(-1,parentId);
+        break;
     }
-    return false;
+    emit dataChanged(index, index);
+    return resultOfUpdate;
 }
 
 bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //вставка пустых строк
 {
-    if(!parent.isValid())
+    DataWrapper* parentItem;
+    if (!parent.parent().isValid())
     {
-        return false;
+        parentItem = root;
     }
-    DataWrapper* parentItem = static_cast<DataWrapper*>(parent.internalPointer());
+    else
+    {
+        parentItem = static_cast<DataWrapper*>(parent.internalPointer());
+    }
     beginInsertRows(QModelIndex(), row, row + count - 1);
     DataWrapper* dw;
+    IData* data;
     for (int i = 0; i < count; i++) {
         dw = new DataWrapper;
+        data = new IData;
+        dw->data = data;
         parentItem->children.insert(row,dw);
+        parentItem->count = parentItem->count + 1;
+        dataBase->insertIntoSubjects_and_themes(-1,-1,-1,"-1",row,-1);
     }
     endInsertRows();
     return true;
@@ -394,9 +411,6 @@ void LectureModel::insertSubject(QString term, QString newSubject)
     int serialNumber = dataBase->getSubjSerialNumber(idTerm);
     dataBase->insertIntoSubjects_and_themes(newIdSubj,iTerm,2,newSubject,serialNumber,idTerm);
 }
-
-
-
 
 
 

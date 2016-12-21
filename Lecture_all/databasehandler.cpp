@@ -327,12 +327,116 @@ int DataBaseHandler::getIdTerm(QString term)
 
 int DataBaseHandler::getSubjSerialNumber(int idParent)
 {
-
-
-    QSqlQuery query;
     int serialNumber = getRowCountOfChild(idParent, 2);
-
-
     return serialNumber;
 }
 
+bool DataBaseHandler::updateTerm(int id_subj,int newTerm)
+{
+    QString strUpdate, strQuery;
+    if(id_subj < 1)
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Term = %1 WHERE Term = -1;";
+        strQuery = strUpdate.arg(QString::number(newTerm));
+    }
+    else
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Term = %1 WHERE Id_subj = %2;";
+        strQuery = strUpdate.arg(QString::number(newTerm)).arg(QString::number(id_subj));
+    }
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу обновить Term";
+        return false;
+    }
+    return true;
+}
+
+bool DataBaseHandler::updateId(int id_subj, int newId)
+{
+    QString strUpdate, strQuery;
+    if(id_subj < 1)
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Id_subj = %1 WHERE Id_subj = -1;";
+        strQuery = strUpdate.arg(QString::number(newId));
+    }
+    else
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Id_subj = %1 WHERE Id_subj = %2;";
+        strQuery = strUpdate.arg(QString::number(newId)).arg(QString::number(id_subj));
+    }
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу обновить Id";
+        return false;
+    }
+    return true;
+}
+
+bool DataBaseHandler::updateType(int id_subj, int newType)
+{
+    QString strUpdate, strQuery;
+    if(id_subj < 1)
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Type = %1 WHERE Type = -1;";
+        strQuery = strUpdate.arg(QString::number(newType));
+    }
+    else
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Type = %1 WHERE Id_subj = %2;";
+        strQuery = strUpdate.arg(QString::number(newType)).arg(QString::number(id_subj));
+    }
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу обновить Type";
+        return false;
+    }
+    return true;
+}
+
+bool DataBaseHandler::updateName(int id_subj, QString newName)
+{
+    QString strUpdate, strQuery;
+    if(id_subj < 1)
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Name_subj = %1 WHERE Name_subj = '-1';";
+        strQuery = strUpdate.arg(newName);
+    }
+    else
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Name_subj = %1 WHERE Id_subj = %2;";
+        strQuery = strUpdate.arg(newName).arg(QString::number(id_subj));
+    }
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу обновить Name";
+        return false;
+    }
+    return true;
+}
+
+bool DataBaseHandler::updateParentId(int id_subj, int newParentId)
+{
+    QString strUpdate, strQuery;
+    if(id_subj < 1)
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Id_parent = %1 WHERE Id_parent = -1;";
+        strQuery = strUpdate.arg(QString::number(newParentId));
+    }
+    else
+    {
+        strUpdate = "UPDATE Subjects_and_themes SET Id_parent = %1 WHERE Id_subj = %2;";
+        strQuery = strUpdate.arg(QString::number(newParentId)).arg(QString::number(id_subj));
+    }
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу обновить ParentId";
+        return false;
+    }
+    return true;
+}

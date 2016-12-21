@@ -37,7 +37,11 @@ public:
 
     //обновление данных в таблицах
     void        updateParAndNumSubjects_and_themes(int idSubj, int newIdParent, int newNumber);
-    //void        updateParAndNumPictures_info(int idImage, int newIdParent, int newNumber);
+    bool        updateTerm(int id_subj, int newTerm);
+    bool        updateId(int id_subj, int newId);
+    bool        updateType(int id_subj, int newType);
+    bool        updateName(int id_subj, QString newName);
+    bool        updateParentId(int id_subj, int newParentId);
     /*void        deleteFromSubjects_and_themes(int idSubj);
     void        deleteFromPictures_info(int idImage);
     void        deleteFromSubjects_and_themes(int idSubj);
