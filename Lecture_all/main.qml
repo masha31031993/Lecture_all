@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.3
+import QtQuick.Controls.Styles 1.4
 
 ApplicationWindow{
     id: applicationWindow
@@ -51,9 +52,12 @@ ApplicationWindow{
             title: qsTr("Обработка")
             MenuItem {
                 text: qsTr("&Оттенки серого")
-                 //onTriggered:
-                     //image = model.grayColor(image);
-                     //image.source =
+                onTriggered: {
+
+                    image.source = myModel.grayColor(image.source);
+
+
+}
             }
             MenuItem {
                 text: qsTr("&Гауссовое размытие")
@@ -114,11 +118,15 @@ ApplicationWindow{
             width: 243
             height: 460
             model: myModel
+           /* style: TreeViewStyle {
+                alternateBackgroundColor: "#55aaff" //цвет полосок
+                backgroundColor: "#55aaff" //цвет фона
+                        }*/
 
             TableViewColumn {
                 title: "Иерархия"
                 role: "display"
-                width:500   
+                width:500
             }
 
             MouseArea {
@@ -149,7 +157,6 @@ ApplicationWindow{
                     if(treeView.model.data(index_image,1)) {
                         image.source = parent.model.data(index_image,1);
                         label_name.text = parent.model.data(index_image,0);
-
                     }
                 }
         }
@@ -420,5 +427,7 @@ ApplicationWindow{
             height: 27
 
         }
+
     }
 }
+

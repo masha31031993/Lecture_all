@@ -1,6 +1,8 @@
 #include "lecturemodel.h"
 #include <QImage>
 #include <QImageWriter>
+#include <QPixmap>
+#include <QImageReader>
 
 LectureModel::LectureModel(QString dbPath, QObject *parent)
     : QAbstractItemModel(parent)
@@ -360,12 +362,39 @@ void LectureModel::insertTerm(QString sterm)
     QImage img = pimg.toImage();
     QImageWriter writer(str);
    // writer.setFileName(str);
-    writer.setFormat("PNG");
+    writer.setFormat("jpeg");
     writer.write(img);
     if (writer.canWrite() == false)
         qDebug() << "Файл не записался";
 }*/
 
-void LectureModel::rotationLeft(QString str) {
+QString LectureModel::grayColor(QString str) {
 
+       //qDebug()<<".../Pictures/"+str+".jpg";
+   // QString path = "../Pictures/"+str+".jpg";
+    //int pos = path.lastIndexOf(':') + 1;
+    //path = path.mid(pos, path.lastIndexOf(':') - pos);
+
+                        //QImage image(path);
+  QImage image;
+                       bool ok3 = image.load(str);
+                       if (ok3 == false)
+                          qDebug()<<"Изображение не считалось";
+                        if(!image.isNull()) {
+                    //QPixmap pm= QPixmap::fromImage(image);
+
+                  //  bool ok1 = pm.load(str);
+                   // if (ok1 == false)
+                     //   qDebug()<<"Изображение не считалось";
+                    //QImage image = pm.toImage();
+                    QImage new_image = image.convertToFormat(QImage::Format_Grayscale8);
+                    bool ok = new_image.save(str);
+                    if (ok == false)
+                        qDebug()<<"Изображение не сохранилось";
+                    //return pm_p;
+                    return str;
+
+
+
+}
 }
