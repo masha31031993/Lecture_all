@@ -7,8 +7,8 @@ import QtQuick.Controls.Styles 1.4
 ApplicationWindow{
     id: applicationWindow
     visible: true
-    width: 700
-    height: 540
+    width: 800
+    height: 700
     title: qsTr("Лекции")
 
 
@@ -52,12 +52,8 @@ ApplicationWindow{
             title: qsTr("Обработка")
             MenuItem {
                 text: qsTr("&Оттенки серого")
-                onTriggered: {
-
+                onTriggered:
                     image.source = myModel.grayColor(image.source);
-
-
-}
             }
             MenuItem {
                 text: qsTr("&Гауссовое размытие")
@@ -84,7 +80,11 @@ ApplicationWindow{
 
     Rectangle {
         id: rectangle1
+        width: 800
+        height: 700
         radius: 0
+        anchors.rightMargin: 0
+        anchors.bottomMargin: 0
         border.width: 0
 
         anchors.fill: parent
@@ -92,7 +92,7 @@ ApplicationWindow{
 
             GradientStop {
                 position: 0.102
-                color: "#cbcbcb"
+                color: "#d6d5d7"
             }
 
             GradientStop {
@@ -115,8 +115,8 @@ ApplicationWindow{
             id: treeView
             x: 7
             y: 32
-            width: 243
-            height: 460
+            width: 280
+            height: 595
             model: myModel
            /* style: TreeViewStyle {
                 alternateBackgroundColor: "#55aaff" //цвет полосок
@@ -164,7 +164,7 @@ ApplicationWindow{
 
         Button {
             id: button_turnright
-            x: 530
+            x: 634
             y: 0
             width: 28
             height: 27
@@ -178,24 +178,10 @@ ApplicationWindow{
         }
 
         Button {
-            id: button_turnleft
-            x: 391
-            y: 0
-            width: 28
-            height: 27
-            iconSource: "left.png"
-            onClicked: {
-                //image.rotation -=90
-                myModel.rotationLeft(label_name.text);
-            }
-            // вызвать добавление в базу нового изображения
-        }
-
-        Button {
             id: button_cut
             enabled: true
             tooltip: "Выделите изображение"
-            x: 433
+            x: 499
             y: 0
             width: 83
             height: 27
@@ -214,19 +200,12 @@ ApplicationWindow{
 
         Image {
             id: image
-            x: 256
-            y: 32
-            width: 436
-            height: 442
+            x: 309
+            y: 33
+            width: 444
+            height: 571
             transformOrigin: Item.Center
 
-          /*  Slider {
-                id: sliderHorizontal
-                x: 88
-                y: 381
-
-
-            }*/
 
             /*MouseArea {
                 // действуем в пределах всего элемента Image
@@ -246,8 +225,8 @@ ApplicationWindow{
 
         Rectangle {
             id: item_term
-            x: 132
-            y: 160
+            x: 221
+            y: 254
             width: 377
             height: 132
             visible: false
@@ -290,8 +269,8 @@ ApplicationWindow{
 
         Rectangle {
             id: item_subject
-            x: 109
-            y: 121
+            x: 195
+            y: 201
             width: 429
             height: 238
             visible: false
@@ -339,8 +318,8 @@ ApplicationWindow{
 
         Rectangle {
             id: item_theme
-            x: 129
-            y: 151
+            x: 221
+            y: 254
             width: 377
             height: 132
             visible: false
@@ -361,7 +340,7 @@ ApplicationWindow{
                 x: 151
                 y: 82
                 text: qsTr("ОК")
-                //onclicked:
+                onClicked: treeView.currentIndex
             }
             Button {
                 id: button_close2
@@ -376,8 +355,8 @@ ApplicationWindow{
 
         Rectangle {
             id: item_image
-            x: 109
-            y: 121
+            x: 195
+            y: 201
             width: 429
             height: 238
             border.width: 1
@@ -421,13 +400,48 @@ ApplicationWindow{
 
         Label {
             id: label_name
-            x: 8
-            y: 498
+            x: 26
+            y: 583
             width: 242
             height: 27
 
         }
 
+        Button {
+            id: button_save
+            x: 499
+            y: 644
+            width: 92
+            height: 27
+            text: "Сохранить"
+            enabled: true
+        }
+        Slider {
+            id: sliderHorizontal_image
+            x: 309
+            y: 610
+            width: 444
+            height: 22
+        }
+
+        Slider {
+            id: sliderHorizontal_rotation
+            x: 598
+            y: 39
+            width: 107
+            height: 22
+        }
+
+        Slider {
+            id: sliderVertical_image
+            x: 759
+            y: 33
+            width: 22
+            height: 571
+            orientation: Qt.Vertical
+            value: 1
+
+        }
     }
 }
 
