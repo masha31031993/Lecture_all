@@ -9,6 +9,14 @@
 
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
 
+enum user_roles{INSERT_ID_ROLE = Qt::UserRole + 1,
+                INSERT_TYPE_ROLE,
+                INSERT_NAME_ROLE,
+                INSERT_TAG_ROLE,
+                INSERT_COMMENT_ROLE,
+                INSERT_TERM_ROLE,
+                INSERT_PARENT_ID_ROLE};
+
 struct IData
 {
     QString name;
@@ -59,10 +67,14 @@ public:
     //Добавление новых строк в БД и модель
     bool insertRows(int row, int count, const QModelIndex &parent);
     Q_INVOKABLE void insertTerm(QString sterm);
-    Q_INVOKABLE void insertSubject(QString term, QString newSubject);
+    Q_INVOKABLE void insertSubject(QString newSubject);
     //Q_INVOKABLE void insertTheme(QString term, QString subject, QString newTheme);
     Q_INVOKABLE QVariant grayColor(QString path);
 
+    //проверка необходимости показа пункта меню
+    Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
+
+    Q_INVOKABLE void setIndexFI(const QModelIndex &index);
 
 private:
 
@@ -70,14 +82,15 @@ private:
     DataBaseHandler *dataBase;
     DataWrapper* root;
     int idForInsert;
+    QModelIndex indexForInsert;
 
-   static const int INSERT_ID_ROLE = Qt::UserRole + 1;
-   static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;
-   static const int INSERT_NAME_ROLE = Qt::UserRole + 3;
-   static const int INSERT_TAG_ROLE = Qt::UserRole + 4;
-   static const int INSERT_COMMENT_ROLE = Qt::UserRole + 5;
-   static const int INSERT_TERM_ROLE = Qt::UserRole + 6;
-   static const int INSERT_PARENT_ID_ROLE = Qt::UserRole + 7;
+   //static const int INSERT_ID_ROLE = Qt::UserRole + 1;
+   //static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;
+   //static const int INSERT_NAME_ROLE = Qt::UserRole + 3;
+   //static const int INSERT_TAG_ROLE = Qt::UserRole + 4;
+   //static const int INSERT_COMMENT_ROLE = Qt::UserRole + 5;
+   //static const int INSERT_TERM_ROLE = Qt::UserRole + 6;
+   //static const int INSERT_PARENT_ID_ROLE = Qt::UserRole + 7;
 
     //активируем функцию перетаскивания
 

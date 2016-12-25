@@ -26,18 +26,22 @@ ApplicationWindow{
             visible: false
             title: qsTr("Добавить")
             MenuItem {
+                id: addTerm
                 text: qsTr("&Добавить семестр")
                 onTriggered: item_term.visible=true
             }
             MenuItem {
+                id: addSubject
                 text: qsTr("&Добавить предмет")
                 onTriggered: item_subject.visible=true
             }
             MenuItem {
+                id: addTheme
                 text: qsTr("&Добавить тему")
                 onTriggered: item_theme.visible=true
             }
             MenuItem {
+                id: addImage
                 text: qsTr("&Добавить изображение")
                 onTriggered: item_image.visible=true
             }
@@ -122,7 +126,6 @@ ApplicationWindow{
                 alternateBackgroundColor: "#55aaff" //цвет полосок
                 backgroundColor: "#55aaff" //цвет фона
                         }*/
-
             TableViewColumn {
                 title: "Иерархия"
                 role: "display"
@@ -146,6 +149,10 @@ ApplicationWindow{
                     if (mouse.button === Qt.RightButton) {
                         var index_2 = parent.indexAt(mouse.x, mouse.y);
                         if (index_2.valid) {
+                            addSubject.visible = myModel.showMenuItem(index_2,2);
+                            addTheme.visible = myModel.showMenuItem(index_2,3);
+                            addImage.visible = myModel.showMenuItem(index_2,4);
+                            myModel.setIndexFI(index_2);
                             menu_add.popup();
                         }
                     }
@@ -185,8 +192,8 @@ ApplicationWindow{
             height: 27
             iconSource: "left.png"
             onClicked: {
-                //image.rotation -=90
-                myModel.rotationLeft(label_name.text);
+                image.rotation -=90
+                //myModel.rotationLeft(label_name.text);
             }
             // вызвать добавление в базу нового изображения
         }
@@ -313,8 +320,11 @@ ApplicationWindow{
                 x: 172
                 y: 192
                 text: qsTr("ОК")
-                onClicked: label1.text=textField_subject.text //Берет текст и выводит на label
-
+                onClicked:{
+                    myModel.insertSubject(textField_subject.text, treeView.currentIndex);
+                    //treeView.
+                    label1.text=textField_subject.text //Берет текст и выводит на label
+                }
             }
 
             Button {

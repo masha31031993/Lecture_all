@@ -402,12 +402,12 @@ bool DataBaseHandler::updateName(int id_subj, QString newName)
     QString strUpdate, strQuery;
     if(id_subj < 1)
     {
-        strUpdate = "UPDATE Subjects_and_themes SET Name_subj = %1 WHERE Name_subj = '-1';";
+        strUpdate = "UPDATE Subjects_and_themes SET Name_subj = '%1' WHERE Name_subj = '-1-1-0';";
         strQuery = strUpdate.arg(newName);
     }
     else
     {
-        strUpdate = "UPDATE Subjects_and_themes SET Name_subj = %1 WHERE Id_subj = %2;";
+        strUpdate = "UPDATE Subjects_and_themes SET Name_subj = '%1' WHERE Id_subj = %2;";
         strQuery = strUpdate.arg(newName).arg(QString::number(id_subj));
     }
     QSqlQuery query;
