@@ -356,6 +356,7 @@ bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //�
         data = new IData;
         dw->data = data;
         dw->parent = parentItem;
+        dw->type = static_cast<h_type>(newType);
         parentItem->children.insert(row,dw);
         parentItem->count = parentItem->count + 1;
         dataBase->insertIntoSubjects_and_themes(-1,-1,newType,"-1-1-0",row,parentItem->id);
@@ -379,23 +380,41 @@ Qt::ItemFlags LectureModel::flags(const QModelIndex &index) const
     return Qt::MoveAction;
 }*/
 
-void LectureModel::insertSubject(QString newSubject)
+void LectureModel::insertUnit(QString unitName, int type)
 {
-    //int idTerm = dataBase->getIdTerm(term);
-    //int iTerm = term.toInt();
-    /*if(!parent.isValid())
+    //indexForInsert проверяется на валидность в QML, перед вызовом setIndexFI
+
+    int serialNumber;
+    int term;
+    if(type == 1)
     {
-        qDebug() << "parent invalid";
-        return;
-    }*/
-    DataWrapper* parentItem = static_cast<DataWrapper*>(indexForInsert.internalPointer());
-    int newIdSubj = dataBase->getFreeIdInS_T();
-    int serialNumber = parentItem->count;
+        term = unitName.toInt();
+        if(dataBase->hasTerm(term))
+        {
+            qDebug() << "Семестр уже имеется";
+            return;
+        }
+        if(term < 1)
+        {
+            qDebug() << "Семестр не подходит";
+            return;
+        }
+        serialNumber = dataBase->getTermSerialNumber(term);
+        indexForInsert = QModelIndex();
+        dataBase->changeTermSerialNumber(term);
+    }
+    else
+    {
+        DataWrapper* parentItem = static_cast<DataWrapper*>(indexForInsert.internalPointer());
+        serialNumber = parentItem->count;
+        term = 0;
+    }
+    int newId = dataBase->getFreeIdInS_T();
     insertRows(serialNumber,1,indexForInsert);
     QModelIndex updateIndex = this->index(serialNumber,0,indexForInsert);
-    setData(updateIndex, newIdSubj, INSERT_ID_ROLE);
-    setData(updateIndex, newSubject, INSERT_NAME_ROLE);
-    setData(updateIndex, 0, INSERT_TERM_ROLE);
+    setData(updateIndex, newId, INSERT_ID_ROLE);
+    setData(updateIndex, unitName, INSERT_NAME_ROLE);
+    setData(updateIndex, term, INSERT_TERM_ROLE);
 
 
 }
@@ -471,3 +490,5 @@ void LectureModel::setIndexFI(const QModelIndex &index)
 {
     indexForInsert = index;
 }
+
+

@@ -267,7 +267,8 @@ ApplicationWindow{
                 y: 82
                 text: qsTr("ОК")
                 onClicked: {
-                    myModel.insertTerm(textField_term.text);
+                    //myModel.insertTerm(textField_term.text);
+                    myModel.insertUnit(textField_term.text,1);
                     item_term.visible=false;
                  //reset
                    }
@@ -321,9 +322,10 @@ ApplicationWindow{
                 y: 192
                 text: qsTr("ОК")
                 onClicked:{
-                    myModel.insertSubject(textField_subject.text, treeView.currentIndex);
-                    //treeView.
+                    //myModel.insertSubject(textField_subject.text, treeView.currentIndex);
+                    myModel.insertUnit(textField_subject.text,2);
                     label1.text=textField_subject.text //Берет текст и выводит на label
+                    item_subject.visible = false;
                 }
             }
 
@@ -371,7 +373,11 @@ ApplicationWindow{
                 x: 151
                 y: 82
                 text: qsTr("ОК")
-                //onclicked:
+                onClicked:
+                {
+                    myModel.insertUnit(textField_theme.text,3);
+                    //item_theme.visible = false;
+                }
             }
             Button {
                 id: button_close2

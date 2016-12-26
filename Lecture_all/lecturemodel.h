@@ -65,15 +65,18 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
     //Добавление новых строк в БД и модель
+
     bool insertRows(int row, int count, const QModelIndex &parent);
+
     Q_INVOKABLE void insertTerm(QString sterm);
-    Q_INVOKABLE void insertSubject(QString newSubject);
-    //Q_INVOKABLE void insertTheme(QString term, QString subject, QString newTheme);
+    Q_INVOKABLE void insertUnit(QString unitName, int type);
+
+
     Q_INVOKABLE QVariant grayColor(QString path);
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
-
+    //установка значения indexForInsert
     Q_INVOKABLE void setIndexFI(const QModelIndex &index);
 
 private:
@@ -82,7 +85,7 @@ private:
     DataBaseHandler *dataBase;
     DataWrapper* root;
     int idForInsert;
-    QModelIndex indexForInsert;
+    QModelIndex indexForInsert;  // используется как родительский индекс для добавления предмета, темы и картинки
 
    //static const int INSERT_ID_ROLE = Qt::UserRole + 1;
    //static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;
