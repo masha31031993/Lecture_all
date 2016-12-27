@@ -286,20 +286,11 @@ void LectureModel::insertTerm(QString strTerm)
     {
         int newIdSubj = dataBase->getFreeIdInS_T();
         int newSerialNumber = dataBase->getTermSerialNumber(term);
-
-        QModelIndex index = this->index(0,0,QModelIndex());
-        //dataBase->insertIntoSubjects_and_themes(newIdSubj,term,1,"0",newSerialNumber,0);
-        //dataBase->changeTermSerialNumber(term);
-        insertRows(newSerialNumber,1,index);
+        insertRows(newSerialNumber,1,QModelIndex());
         QModelIndex updateIndex = this->index(newSerialNumber,0,QModelIndex());
-        //
-        //setData(updateIndex, newIdSubj, INSERT_ID_ROLE);
-        setData(updateIndex, 1, INSERT_TYPE_ROLE);
         setData(updateIndex, newIdSubj, INSERT_ID_ROLE);
         setData(updateIndex, term, INSERT_NAME_ROLE);
         setData(updateIndex, term, INSERT_TERM_ROLE);
-        setData(updateIndex, 0, INSERT_PARENT_ID_ROLE);
-
         dataBase->changeTermSerialNumber(term);
     }
     else
@@ -307,13 +298,12 @@ void LectureModel::insertTerm(QString strTerm)
         qDebug() << "Семестр уже имеется";
     }
 }
-//setData()//
+
 bool LectureModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    //DataWrapper* parentItem;
     DataWrapper* dw = static_cast<DataWrapper*>(index.internalPointer());
     QString name, tag, comment;
-    int id, type, term, parentId;
+    int id, term, parentId;
     bool resultOfUpdate = false;
     switch(role)
     {
@@ -337,26 +327,9 @@ bool LectureModel::setData(const QModelIndex &index, const QVariant &value, int 
         comment = value.toString();
         dw->data->comment = comment;
         break;
-    case INSERT_TYPE_ROLE:
-        type = value.toInt();
-        dw->type = static_cast<h_type>(type);
-        if(type == 1)
-        {
-            dw->parent = root;
-        }
-        else
-        {
-           // dw->parent = static_cast<DataWrapper*>(index.parent().internalPointer());
-        }
-        resultOfUpdate = dataBase->updateType(-1, type);
-        break;
     case INSERT_TERM_ROLE:
         term = value.toInt();
         resultOfUpdate = dataBase->updateTerm(-1,term);
-        break;
-    case INSERT_PARENT_ID_ROLE:
-        parentId = value.toInt();
-        resultOfUpdate = dataBase->updateParentId(-1,parentId);
         break;
     }
     emit dataChanged(index, index);
@@ -366,7 +339,7 @@ bool LectureModel::setData(const QModelIndex &index, const QVariant &value, int 
 bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //вставка пустых строк
 {
     DataWrapper* parentItem;
-    if (!parent.parent().isValid())
+    if (!parent.isValid())
     {
         parentItem = root;
     }
@@ -374,16 +347,19 @@ bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //�
     {
         parentItem = static_cast<DataWrapper*>(parent.internalPointer());
     }
-    beginInsertRows(QModelIndex(), row, row + count - 1);
+    beginInsertRows(parent, row, row + count - 1);
     DataWrapper* dw;
     IData* data;
+    int newType = parentItem->type + 1;
     for (int i = 0; i < count; i++) {
         dw = new DataWrapper;
         data = new IData;
         dw->data = data;
+        dw->parent = parentItem;
+        dw->type = static_cast<h_type>(newType);
         parentItem->children.insert(row,dw);
         parentItem->count = parentItem->count + 1;
-        dataBase->insertIntoSubjects_and_themes(-1,-1,-1,"-1",row,-1);
+        dataBase->insertIntoSubjects_and_themes(-1,-1,newType,"-1-1-0",row,parentItem->id);
     }
     endInsertRows();
     return true;
@@ -404,17 +380,46 @@ Qt::ItemFlags LectureModel::flags(const QModelIndex &index) const
     return Qt::MoveAction;
 }*/
 
-void LectureModel::insertSubject(QString term, QString newSubject)
+void LectureModel::insertUnit(QString unitName, int type)
 {
-    int idTerm = dataBase->getIdTerm(term);
-    int iTerm = term.toInt();
-    int newIdSubj = dataBase->getFreeIdInS_T();
-    int serialNumber = dataBase->getSubjSerialNumber(idTerm);
-    dataBase->insertIntoSubjects_and_themes(newIdSubj,iTerm,2,newSubject,serialNumber,idTerm);
+    //indexForInsert проверяется на валидность в QML, перед вызовом setIndexFI
+
+    int serialNumber;
+    int term;
+    if(type == 1)
+    {
+        term = unitName.toInt();
+        if(dataBase->hasTerm(term))
+        {
+            qDebug() << "Семестр уже имеется";
+            return;
+        }
+        if(term < 1)
+        {
+            qDebug() << "Семестр не подходит";
+            return;
+        }
+        serialNumber = dataBase->getTermSerialNumber(term);
+        indexForInsert = QModelIndex();
+        dataBase->changeTermSerialNumber(term);
+    }
+    else
+    {
+        DataWrapper* parentItem = static_cast<DataWrapper*>(indexForInsert.internalPointer());
+        serialNumber = parentItem->count;
+        term = 0;
+    }
+    int newId = dataBase->getFreeIdInS_T();
+    insertRows(serialNumber,1,indexForInsert);
+    QModelIndex updateIndex = this->index(serialNumber,0,indexForInsert);
+    setData(updateIndex, newId, INSERT_ID_ROLE);
+    setData(updateIndex, unitName, INSERT_NAME_ROLE);
+    setData(updateIndex, term, INSERT_TERM_ROLE);
+
+
 }
 
 /*void LectureModel:: saveImage(QString str) {
-
     QImage img = pimg.toImage();
     QImageWriter writer(str);
    // writer.setFileName(str);
@@ -446,4 +451,48 @@ QVariant LectureModel::grayColor(QString str) {
     }
     // изменить путь изображения в БД
    return QVariant();
+}
+
+bool LectureModel::showMenuItem(const QModelIndex &index, int type)
+{
+    DataWrapper* item = static_cast<DataWrapper*>(index.internalPointer());
+    if(type < 4)
+    {
+        if(item->type == static_cast<h_type>(type - 1))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else if(type == 4)
+    {
+        if(item->type >= static_cast<h_type>(type - 1))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        qDebug() << "Incorrect type";
+        return false;
+    }
+}
+
+void LectureModel::setIndexFI(const QModelIndex &index)
+{
+    indexForInsert = index;
+}
+
+
+QString LectureModel::cutPath(QString url) {
+    int pos = url.indexOf('/') + 2;
+    url = url.mid(pos);
+    return url;
 }
