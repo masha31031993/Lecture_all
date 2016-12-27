@@ -21,23 +21,36 @@ ApplicationWindow{
                 onTriggered: Qt.quit();
             }
         }*/
+       style: MenuBarStyle {
+
+           background: Rectangle {
+               color: "#ffffff"
+               //border.color: "#a8cff7"
+               //border.width: 1
+           }
+       }
+
         Menu {
             id: menu_add
             visible: false
             title: qsTr("Добавить")
             MenuItem {
+                id: addTerm
                 text: qsTr("&Добавить семестр")
                 onTriggered: item_term.visible=true
             }
             MenuItem {
+                id: addSubject
                 text: qsTr("&Добавить предмет")
                 onTriggered: item_subject.visible=true
             }
             MenuItem {
+                id: addTheme
                 text: qsTr("&Добавить тему")
                 onTriggered: item_theme.visible=true
             }
             MenuItem {
+                id: addImage
                 text: qsTr("&Добавить изображение")
                 onTriggered: item_image.visible=true
             }
@@ -79,20 +92,19 @@ ApplicationWindow{
     }
 
     Rectangle {
-        id: rectangle1
-        width: 800
-        height: 700
+        id: form
+        width: applicationWindow.width
+        height: applicationWindow.height
         radius: 0
         anchors.rightMargin: 0
         anchors.bottomMargin: 0
         border.width: 0
-
         anchors.fill: parent
         gradient: Gradient {
 
             GradientStop {
                 position: 0.102
-                color: "#d6d5d7"
+                color: "#ffffff"
             }
 
             GradientStop {
@@ -109,105 +121,150 @@ ApplicationWindow{
                 position: 0.994
                 color: "#3a43d7"
             }
+
         }
 
         TreeView {
-            id: treeView
-            x: 7
-            y: 32
-            width: 280
-            height: 595
-            model: myModel
-           /* style: TreeViewStyle {
-                alternateBackgroundColor: "#55aaff" //цвет полосок
-                backgroundColor: "#55aaff" //цвет фона
-                        }*/
+                    id: treeView
+                    x: 0
+                    y: 0
+                    width: parent.width/3
+                    height: parent.height/1.1
+                    model: myModel
 
-            TableViewColumn {
-                title: "Иерархия"
-                role: "display"
-                width:500
-            }
-
-            MouseArea {
-                id: mouseArea_tree
-                anchors.rightMargin: 0
-                anchors.bottomMargin: 18
-                anchors.fill:parent
-                acceptedButtons: Qt.RightButton | Qt.LeftButton
-
-                onClicked: {
-                    if (mouse.button === Qt.LeftButton) {
-                        var index_1 = parent.indexAt(mouse.x, mouse.y);
-                        if (index_1.valid) {
-                            parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
-                        }
+                    TableViewColumn {
+                        title: "Иерархия"
+                        role: "display"
+                        width: 500
                     }
-                    if (mouse.button === Qt.RightButton) {
-                        var index_2 = parent.indexAt(mouse.x, mouse.y);
-                        if (index_2.valid) {
-                            menu_add.popup();
-                        }
+
+                    MouseArea {
+                        id: mouseArea_tree
+                        anchors.bottomMargin: 21
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton | Qt.LeftButton
+
+                        onClicked: {
+                                        if (mouse.button === Qt.LeftButton) {
+                                            var index_1 = parent.indexAt(mouse.x, mouse.y);
+                                            if (index_1.valid) {
+                                                parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
+                                            }
+                                        }
+                                        if (mouse.button === Qt.RightButton) {
+                                            var index_2 = parent.indexAt(mouse.x, mouse.y);
+                                            if (index_2.valid) {
+                                                addSubject.visible = myModel.showMenuItem(index_2,2);
+                                                addTheme.visible = myModel.showMenuItem(index_2,3);
+                                                addImage.visible = myModel.showMenuItem(index_2,4);
+                                                myModel.setIndexFI(index_2);
+                                                menu_add.popup();
+                                            }
+                                        }
+
+                                    }
+
+                        onDoubleClicked: {
+                                        var index_image = parent.indexAt(mouse.x, mouse.y);
+                                        if(myModel.data(index_image,1)) {
+                                            image.source = myModel.data(index_image,1);
+                                        }
+                                    }
+                                }
+
+
+
+
+
+
                     }
+
+
+
+            Rectangle {
+                id: r_button
+                x: 267
+                y: 0
+                width: form.width*2/3
+                height: 30 //ширина
+                color: "#00000000"
+
+                Button {
+                    id: button_turn
+                    x: 187
+                    y: 0
+                    width: 28
+                    height: 27
+                    iconSource: "right.png"
+                    enabled: false
+                    onClicked: {
+                       slider_rotation.visible = true;
+                   }
 
                 }
 
-                onDoubleClicked: {
-                    var index_image = parent.indexAt(mouse.x, mouse.y);
-                    if(treeView.model.data(index_image,1)) {
-                        image.source = parent.model.data(index_image,1);
-                        label_name.text = parent.model.data(index_image,0);
+                Button {
+                    id: button_cut
+                    enabled: false
+                    tooltip: "Выделите изображение"
+                    x: 98
+                    y: 0
+                    width: 83
+                    height: 27
+                    text: "Обрезать"
+                    //onclicked:
+                }
+                Button {
+                    id: button_save
+                    x: 0
+                    y: 0
+                    width: 92
+                    height: 27
+                    text: "Сохранить"
+                    enabled: false
+                }
+
+                //Button {
+                    //id: button_close
+                    //x:604
+                    //y:7
+                    //width: 28
+                    //height: 27
+                    //iconSource: "close.png"
+                //}
+                Slider {
+                    id: slider_rotation
+                    x: 236
+                    y: 3
+                    width: 107
+                    height: 22
+                    stepSize: 0.001
+                    visible: false
+                    onEnabledChanged: {
+                        image.rotation = slider_rotation.value;
                     }
                 }
-        }
-        }
-
-        Button {
-            id: button_turnright
-            x: 634
-            y: 0
-            width: 28
-            height: 27
-            iconSource: "right.png"
-            onClicked: {
-                image.rotation +=90;
 
             }
-            // вызвать добавление в базу нового изображения
-            //??? сохранить изображение
-        }
+            Rectangle {
+                id: r_image
+                x: 267
+                y: 30
+                width: form.width*2/3
+                height: form.height-30 //ширина
+                color: "#00000000"
 
-        Button {
-            id: button_cut
-            enabled: true
-            tooltip: "Выделите изображение"
-            x: 499
-            y: 0
-            width: 83
-            height: 27
-            text: "Обрезать"
-            //onclicked:
-        }
+                Image {
+                    id: image
+                    anchors.topMargin: 25
+                    anchors.bottomMargin: 85
+                    anchors.rightMargin: 22
+                    anchors.fill: parent
+                    smooth: true
+                    rotation: slider_rotation.value*360
+                    scale: 0.5
 
-        /*Button {
-                id: button_close
-                x:604
-                y:7
-                width: 28
-                height: 27
-                iconSource: "close.png"
-            }*/
-
-        Image {
-            id: image
-            x: 309
-            y: 33
-            width: 444
-            height: 571
-            transformOrigin: Item.Center
-
-
-            /*MouseArea {
+                    MouseArea {
                 // действуем в пределах всего элемента Image
                 anchors.fill: parent
                 id: mouseArea_image
@@ -216,12 +273,42 @@ ApplicationWindow{
                 anchors.leftMargin: 0
                 anchors.topMargin: 0
                 hoverEnabled: false
-                onClicked: {
-                    var pos_x = mouse.x;
-                    var pos_y = mouse.y;
+                onEntered: {
+                        button_cut.enabled = true;
+                        button_save.enabled = true;
+                        button_turn.enabled = true;
+                    }
                 }
-            }*/
-        }
+                }
+            }
+
+                Slider {
+                    id: sliderHorizontal_image
+                    x: 278
+                    y: 614
+                    width: 511
+                    height: 22
+                }
+
+
+
+                Slider {
+                    id: sliderVertical_image
+                    x: 767
+                    y: 30
+                    width: 22
+                    height: 585
+                    orientation: Qt.Vertical
+                    value: 1
+
+                }
+
+
+
+
+
+
+
 
         Rectangle {
             id: item_term
@@ -239,7 +326,8 @@ ApplicationWindow{
                 y: 82
                 text: qsTr("ОК")
                 onClicked: {
-                    myModel.insertTerm(textField_term.text);
+                    //myModel.insertTerm(textField_term.text);
+                    myModel.insertUnit(textField_term.text,1);
                     item_term.visible=false;
                  //reset
                    }
@@ -292,7 +380,12 @@ ApplicationWindow{
                 x: 172
                 y: 192
                 text: qsTr("ОК")
-                onClicked: label1.text=textField_subject.text //Берет текст и выводит на label
+                onClicked: {
+                    //myModel.insertSubject(textField_subject.text, treeView.currentIndex);
+                    myModel.insertUnit(textField_subject.text,2);
+                    item_subject.visible = false;
+
+                }
 
             }
 
@@ -306,14 +399,7 @@ ApplicationWindow{
                 onClicked: item_subject.visible=false
             }
 
-            Label {
-                id: label1
-                x: 29
-                y: 182
-                width: 79
-                height: 32
 
-            }
         }
 
         Rectangle {
@@ -340,7 +426,11 @@ ApplicationWindow{
                 x: 151
                 y: 82
                 text: qsTr("ОК")
-                onClicked: treeView.currentIndex
+                onClicked: {
+                    myModel.insertUnit(textField_theme.text,3);
+                    item_theme.visible = false;
+
+                }
             }
             Button {
                 id: button_close2
@@ -380,6 +470,37 @@ ApplicationWindow{
                 iconSource: "close.png"
                 onClicked: item_image.visible=false
             }
+
+            TextField {
+                   x: 90
+                   y: 44
+                   width: 250
+                   height: 33
+                   id: textField_path
+                   placeholderText: qsTr("Путь к изображению")
+
+                   MouseArea {
+                       anchors.fill: parent
+                       id: mouseArea_path
+
+                       onDoubleClicked: {
+                           fileDialog.visible = true;
+                       }
+                   }
+               }
+
+            FileDialog {
+                                id: fileDialog
+                                title: "Выбор изображения"
+                                folder: shortcuts.home
+                                visible: false
+                                nameFilters: [ "Изображения (*.jpg *.png *.bmp *gif)", "Все файлы (*)" ]
+                                selectedNameFilter: "Изображения (*.jpg *.png *.bmp *gif)"
+                                onAccepted: {
+                                    textField_path.text = myModel.cutPath(fileDialog.fileUrl.toString());
+                                }
+            }
+
             TextField {
                    x: 90
                    y: 93
@@ -396,52 +517,9 @@ ApplicationWindow{
                    id: textField_image_tags
                    placeholderText: qsTr("Введите тэги")
             }
-        }
-
-        Label {
-            id: label_name
-            x: 26
-            y: 583
-            width: 242
-            height: 27
 
         }
 
-        Button {
-            id: button_save
-            x: 499
-            y: 644
-            width: 92
-            height: 27
-            text: "Сохранить"
-            enabled: true
-        }
-        Slider {
-            id: sliderHorizontal_image
-            x: 309
-            y: 610
-            width: 444
-            height: 22
-        }
 
-        Slider {
-            id: sliderHorizontal_rotation
-            x: 598
-            y: 39
-            width: 107
-            height: 22
-        }
-
-        Slider {
-            id: sliderVertical_image
-            x: 759
-            y: 33
-            width: 22
-            height: 571
-            orientation: Qt.Vertical
-            value: 1
-
-        }
     }
 }
-
