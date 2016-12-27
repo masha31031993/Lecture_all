@@ -7,8 +7,8 @@ import QtQuick.Controls.Styles 1.4
 ApplicationWindow{
     id: applicationWindow
     visible: true
-    width: 700
-    height: 540
+    width: 800
+    height: 700
     title: qsTr("Лекции")
 
 
@@ -21,6 +21,15 @@ ApplicationWindow{
                 onTriggered: Qt.quit();
             }
         }*/
+       style: MenuBarStyle {
+
+           background: Rectangle {
+               color: "#ffffff"
+               //border.color: "#a8cff7"
+               //border.width: 1
+           }
+       }
+
         Menu {
             id: menu_add
             visible: false
@@ -47,7 +56,7 @@ ApplicationWindow{
             }
             MenuItem {
                 text: qsTr("&Удалить элемент")
-                //onTriggered:
+                onTriggered: myModel.removeUnit()
             }
 
         }
@@ -56,12 +65,8 @@ ApplicationWindow{
             title: qsTr("Обработка")
             MenuItem {
                 text: qsTr("&Оттенки серого")
-                onTriggered: {
-
+                onTriggered:
                     image.source = myModel.grayColor(image.source);
-
-
-}
             }
             MenuItem {
                 text: qsTr("&Гауссовое размытие")
@@ -87,16 +92,19 @@ ApplicationWindow{
     }
 
     Rectangle {
-        id: rectangle1
+        id: form
+        width: applicationWindow.width
+        height: applicationWindow.height
         radius: 0
+        anchors.rightMargin: 0
+        anchors.bottomMargin: 0
         border.width: 0
-
         anchors.fill: parent
         gradient: Gradient {
 
             GradientStop {
                 position: 0.102
-                color: "#cbcbcb"
+                color: "#ffffff"
             }
 
             GradientStop {
@@ -113,129 +121,150 @@ ApplicationWindow{
                 position: 0.994
                 color: "#3a43d7"
             }
+
         }
 
         TreeView {
-            id: treeView
-            x: 7
-            y: 32
-            width: 243
-            height: 460
-            model: myModel
-           /* style: TreeViewStyle {
-                alternateBackgroundColor: "#55aaff" //цвет полосок
-                backgroundColor: "#55aaff" //цвет фона
-                        }*/
-            TableViewColumn {
-                title: "Иерархия"
-                role: "display"
-                width:500
-            }
+                    id: treeView
+                    x: 0
+                    y: 0
+                    width: parent.width/3
+                    height: parent.height/1.1
+                    model: myModel
 
-            MouseArea {
-                id: mouseArea_tree
-                anchors.rightMargin: 0
-                anchors.bottomMargin: 18
-                anchors.fill:parent
-                acceptedButtons: Qt.RightButton | Qt.LeftButton
+                    TableViewColumn {
+                        title: "Иерархия"
+                        role: "display"
+                        width: 500
+                    }
 
-                onClicked: {
-                    if (mouse.button === Qt.LeftButton) {
-                        var index_1 = parent.indexAt(mouse.x, mouse.y);
-                        if (index_1.valid) {
-                            parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
-                        }
+                    MouseArea {
+                        id: mouseArea_tree
+                        anchors.bottomMargin: 21
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton | Qt.LeftButton
+
+                        onClicked: {
+                                        if (mouse.button === Qt.LeftButton) {
+                                            var index_1 = parent.indexAt(mouse.x, mouse.y);
+                                            if (index_1.valid) {
+                                                parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
+                                            }
+                                        }
+                                        if (mouse.button === Qt.RightButton) {
+                                            var index_2 = parent.indexAt(mouse.x, mouse.y);
+                                            if (index_2.valid) {
+                                                addSubject.visible = myModel.showMenuItem(index_2,2);
+                                                addTheme.visible = myModel.showMenuItem(index_2,3);
+                                                addImage.visible = myModel.showMenuItem(index_2,4);
+                                                myModel.setIndexFI(index_2);
+                                                menu_add.popup();
+                                            }
+                                        }
+
+                                    }
+
+                        onDoubleClicked: {
+                                        var index_image = parent.indexAt(mouse.x, mouse.y);
+                                        if(myModel.data(index_image,1)) {
+                                            image.source = myModel.data(index_image,1);
+                                        }
+                                    }
+                                }
+
+
+
+
+
+
                     }
-                    if (mouse.button === Qt.RightButton) {
-                        var index_2 = parent.indexAt(mouse.x, mouse.y);
-                        if (index_2.valid) {
-                            addSubject.visible = myModel.showMenuItem(index_2,2);
-                            addTheme.visible = myModel.showMenuItem(index_2,3);
-                            addImage.visible = myModel.showMenuItem(index_2,4);
-                            myModel.setIndexFI(index_2);
-                            menu_add.popup();
-                        }
-                    }
+
+
+
+            Rectangle {
+                id: r_button
+                x: 267
+                y: 0
+                width: form.width*2/3
+                height: 30 //ширина
+                color: "#00000000"
+
+                Button {
+                    id: button_turn
+                    x: 187
+                    y: 0
+                    width: 28
+                    height: 27
+                    iconSource: "right.png"
+                    enabled: false
+                    onClicked: {
+                       slider_rotation.visible = true;
+                   }
 
                 }
 
-                onDoubleClicked: {
-                    var index_image = parent.indexAt(mouse.x, mouse.y);
-                    if(treeView.model.data(index_image,1)) {
-                        image.source = parent.model.data(index_image,1);
-                        label_name.text = parent.model.data(index_image,0);
+                Button {
+                    id: button_cut
+                    enabled: false
+                    tooltip: "Выделите изображение"
+                    x: 98
+                    y: 0
+                    width: 83
+                    height: 27
+                    text: "Обрезать"
+                    //onclicked:
+                }
+                Button {
+                    id: button_save
+                    x: 0
+                    y: 0
+                    width: 92
+                    height: 27
+                    text: "Сохранить"
+                    enabled: false
+                }
+
+                //Button {
+                    //id: button_close
+                    //x:604
+                    //y:7
+                    //width: 28
+                    //height: 27
+                    //iconSource: "close.png"
+                //}
+                Slider {
+                    id: slider_rotation
+                    x: 236
+                    y: 3
+                    width: 107
+                    height: 22
+                    stepSize: 0.001
+                    visible: false
+                    onEnabledChanged: {
+                        image.rotation = slider_rotation.value;
                     }
                 }
-        }
-        }
-
-        Button {
-            id: button_turnright
-            x: 530
-            y: 0
-            width: 28
-            height: 27
-            iconSource: "right.png"
-            onClicked: {
-                image.rotation +=90;
 
             }
-            // вызвать добавление в базу нового изображения
-            //??? сохранить изображение
-        }
+            Rectangle {
+                id: r_image
+                x: 267
+                y: 30
+                width: form.width*2/3
+                height: form.height-30 //ширина
+                color: "#00000000"
 
-        Button {
-            id: button_turnleft
-            x: 391
-            y: 0
-            width: 28
-            height: 27
-            iconSource: "left.png"
-            onClicked: {
-                image.rotation -=90
-                //myModel.rotationLeft(label_name.text);
-            }
-            // вызвать добавление в базу нового изображения
-        }
+                Image {
+                    id: image
+                    anchors.topMargin: 25
+                    anchors.bottomMargin: 85
+                    anchors.rightMargin: 22
+                    anchors.fill: parent
+                    smooth: true
+                    rotation: slider_rotation.value*360
+                    scale: 0.5
 
-        Button {
-            id: button_cut
-            enabled: true
-            tooltip: "Выделите изображение"
-            x: 433
-            y: 0
-            width: 83
-            height: 27
-            text: "Обрезать"
-            //onclicked:
-        }
-
-        /*Button {
-                id: button_close
-                x:604
-                y:7
-                width: 28
-                height: 27
-                iconSource: "close.png"
-            }*/
-
-        Image {
-            id: image
-            x: 256
-            y: 32
-            width: 436
-            height: 442
-            transformOrigin: Item.Center
-
-          /*  Slider {
-                id: sliderHorizontal
-                x: 88
-                y: 381
-
-
-            }*/
-
-            /*MouseArea {
+                    MouseArea {
                 // действуем в пределах всего элемента Image
                 anchors.fill: parent
                 id: mouseArea_image
@@ -244,17 +273,47 @@ ApplicationWindow{
                 anchors.leftMargin: 0
                 anchors.topMargin: 0
                 hoverEnabled: false
-                onClicked: {
-                    var pos_x = mouse.x;
-                    var pos_y = mouse.y;
+                onEntered: {
+                        button_cut.enabled = true;
+                        button_save.enabled = true;
+                        button_turn.enabled = true;
+                    }
                 }
-            }*/
-        }
+                }
+            }
+
+                Slider {
+                    id: sliderHorizontal_image
+                    x: 278
+                    y: 614
+                    width: 511
+                    height: 22
+                }
+
+
+
+                Slider {
+                    id: sliderVertical_image
+                    x: 767
+                    y: 30
+                    width: 22
+                    height: 585
+                    orientation: Qt.Vertical
+                    value: 1
+
+                }
+
+
+
+
+
+
+
 
         Rectangle {
             id: item_term
-            x: 132
-            y: 160
+            x: 221
+            y: 254
             width: 377
             height: 132
             visible: false
@@ -298,8 +357,8 @@ ApplicationWindow{
 
         Rectangle {
             id: item_subject
-            x: 109
-            y: 121
+            x: 195
+            y: 201
             width: 429
             height: 238
             visible: false
@@ -321,12 +380,13 @@ ApplicationWindow{
                 x: 172
                 y: 192
                 text: qsTr("ОК")
-                onClicked:{
+                onClicked: {
                     //myModel.insertSubject(textField_subject.text, treeView.currentIndex);
                     myModel.insertUnit(textField_subject.text,2);
-                    label1.text=textField_subject.text //Берет текст и выводит на label
                     item_subject.visible = false;
+
                 }
+
             }
 
             Button {
@@ -339,20 +399,13 @@ ApplicationWindow{
                 onClicked: item_subject.visible=false
             }
 
-            Label {
-                id: label1
-                x: 29
-                y: 182
-                width: 79
-                height: 32
 
-            }
         }
 
         Rectangle {
             id: item_theme
-            x: 129
-            y: 151
+            x: 221
+            y: 254
             width: 377
             height: 132
             visible: false
@@ -373,10 +426,10 @@ ApplicationWindow{
                 x: 151
                 y: 82
                 text: qsTr("ОК")
-                onClicked:
-                {
+                onClicked: {
                     myModel.insertUnit(textField_theme.text,3);
-                    //item_theme.visible = false;
+                    item_theme.visible = false;
+
                 }
             }
             Button {
@@ -392,8 +445,8 @@ ApplicationWindow{
 
         Rectangle {
             id: item_image
-            x: 109
-            y: 121
+            x: 195
+            y: 201
             width: 429
             height: 238
             border.width: 1
@@ -417,6 +470,37 @@ ApplicationWindow{
                 iconSource: "close.png"
                 onClicked: item_image.visible=false
             }
+
+            TextField {
+                   x: 90
+                   y: 44
+                   width: 250
+                   height: 33
+                   id: textField_path
+                   placeholderText: qsTr("Путь к изображению")
+
+                   MouseArea {
+                       anchors.fill: parent
+                       id: mouseArea_path
+
+                       onDoubleClicked: {
+                           fileDialog.visible = true;
+                       }
+                   }
+               }
+
+            FileDialog {
+                                id: fileDialog
+                                title: "Выбор изображения"
+                                folder: shortcuts.home
+                                visible: false
+                                nameFilters: [ "Изображения (*.jpg *.png *.bmp *gif)", "Все файлы (*)" ]
+                                selectedNameFilter: "Изображения (*.jpg *.png *.bmp *gif)"
+                                onAccepted: {
+                                    textField_path.text = myModel.cutPath(fileDialog.fileUrl.toString());
+                                }
+            }
+
             TextField {
                    x: 90
                    y: 93
@@ -433,17 +517,9 @@ ApplicationWindow{
                    id: textField_image_tags
                    placeholderText: qsTr("Введите тэги")
             }
-        }
-
-        Label {
-            id: label_name
-            x: 8
-            y: 498
-            width: 242
-            height: 27
 
         }
+
 
     }
 }
-

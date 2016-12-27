@@ -382,7 +382,7 @@ Qt::ItemFlags LectureModel::flags(const QModelIndex &index) const
 
 void LectureModel::insertUnit(QString unitName, int type)
 {
-    //indexForInsert проверяется на валидность в QML, перед вызовом setIndexFI
+    //selectedIndex проверяется на валидность в QML, перед вызовом setIndexFI
 
     int serialNumber;
     int term;
@@ -400,18 +400,18 @@ void LectureModel::insertUnit(QString unitName, int type)
             return;
         }
         serialNumber = dataBase->getTermSerialNumber(term);
-        indexForInsert = QModelIndex();
+        selectedIndex = QModelIndex();
         dataBase->changeTermSerialNumber(term);
     }
     else
     {
-        DataWrapper* parentItem = static_cast<DataWrapper*>(indexForInsert.internalPointer());
+        DataWrapper* parentItem = static_cast<DataWrapper*>(selectedIndex.internalPointer());
         serialNumber = parentItem->count;
         term = 0;
     }
     int newId = dataBase->getFreeIdInS_T();
-    insertRows(serialNumber,1,indexForInsert);
-    QModelIndex updateIndex = this->index(serialNumber,0,indexForInsert);
+    insertRows(serialNumber,1,selectedIndex);
+    QModelIndex updateIndex = this->index(serialNumber,0,selectedIndex);
     setData(updateIndex, newId, INSERT_ID_ROLE);
     setData(updateIndex, unitName, INSERT_NAME_ROLE);
     setData(updateIndex, term, INSERT_TERM_ROLE);
@@ -488,7 +488,54 @@ bool LectureModel::showMenuItem(const QModelIndex &index, int type)
 
 void LectureModel::setIndexFI(const QModelIndex &index)
 {
-    indexForInsert = index;
+    selectedIndex = index;
 }
+
+bool LectureModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    DataWrapper* parentItem;
+    if (!parent.isValid())
+    {
+        parentItem = root;
+    }
+    else
+    {
+        parentItem = static_cast<DataWrapper*>(parent.internalPointer());
+    }
+    beginRemoveRows(parent, row, row + count - 1);
+    DataWrapper* dw;
+    for(int i = 0; i<count; i++)
+    {
+        dw = parentItem->children.at(row);
+        dataBase->deleteFromSubjects_and_themes(dw->id);
+        parentItem->children.removeAt(row);
+        parentItem->count--;
+        foreach (DataWrapper* child, parentItem->children) {
+            if(child->number > row)
+            {
+                child->number--;
+            }
+        }
+    }
+    endRemoveRows();
+    return true;
+}
+
+void LectureModel::removeUnit()
+{
+    DataWrapper* item = static_cast<DataWrapper*>(selectedIndex.internalPointer());
+    int serialNumber = item->number;
+    QModelIndex parentIndex;
+    if(item->type == TERM)
+    {
+        parentIndex = QModelIndex();
+    }
+    else
+    {
+        parentIndex = selectedIndex.parent();
+    }
+    removeRows(serialNumber,1,parentIndex);
+}
+
 
 
