@@ -157,7 +157,7 @@ ApplicationWindow{
                                                 addSubject.visible = myModel.showMenuItem(index_2,2);
                                                 addTheme.visible = myModel.showMenuItem(index_2,3);
                                                 addImage.visible = myModel.showMenuItem(index_2,4);
-                                                myModel.setIndexFI(index_2);
+                                                myModel.setSelIndex(index_2);
                                                 menu_add.popup();
                                             }
                                         }
@@ -459,7 +459,9 @@ ApplicationWindow{
                 x: 173
                 y: 191
                 text: qsTr("ОК")
-                //onclicked:
+                onClicked:{
+                    myModel.insertImage(textField_path.text,textField_image_comment.text,textField_image_tags.text);
+                }
             }
             Button {
                 id: button_close3

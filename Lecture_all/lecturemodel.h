@@ -10,12 +10,10 @@
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
 
 enum user_roles{INSERT_ID_ROLE = Qt::UserRole + 1,
-                INSERT_TYPE_ROLE,
                 INSERT_NAME_ROLE,
                 INSERT_TAG_ROLE,
                 INSERT_COMMENT_ROLE,
-                INSERT_TERM_ROLE,
-                INSERT_PARENT_ID_ROLE};
+                INSERT_TERM_ROLE};
 
 struct IData
 {
@@ -72,18 +70,19 @@ public:
 
     bool removeRows(int row, int count, const QModelIndex &parent);
 
-    Q_INVOKABLE void insertTerm(QString sterm);
     Q_INVOKABLE void insertUnit(QString unitName, int type);
+    Q_INVOKABLE void insertImage(QString path, QString comment, QString tags);
 
     Q_INVOKABLE void removeUnit();
 
 
     Q_INVOKABLE QVariant grayColor(QString path);
+    Q_INVOKABLE QString cutPath(QString url);
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
     //установка значения selectedIndex
-    Q_INVOKABLE void setIndexFI(const QModelIndex &index);
+    Q_INVOKABLE void setSelIndex(const QModelIndex &index);
 
 private:
 

@@ -210,6 +210,7 @@ void LectureModel::fetchMore(const QModelIndex &parent)
             dw->type = static_cast<h_type>(query.value(rec.indexOf("Type")).toInt());
             dw->number = query.value(rec.indexOf("Serial_number")).toInt();
             dw->id = query.value(rec.indexOf("Id_subj")).toInt();
+            dw->count = dataBase->getRowCountOfChild(dw->id, dw->type);
         }
         else
         {
@@ -219,10 +220,10 @@ void LectureModel::fetchMore(const QModelIndex &parent)
             dw->type = IMAGE;
             dw->number = query.value(rec.indexOf("Number")).toInt();
             dw->id = query.value(rec.indexOf("Id_image")).toInt();
+            dw->count = 0;
         }
         dw->data = iData;
         dw->parent = parentItem;
-        dw->count = dataBase->getRowCountOfChild(dw->id, dw->type);
         parentItem->children.append(dw);
 
     }
@@ -279,57 +280,39 @@ bool LectureModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int 
     endMoveRows();
 }
 
-void LectureModel::insertTerm(QString strTerm)
-{
-    int term = strTerm.toInt();
-    if(!dataBase->hasTerm(term))
-    {
-        int newIdSubj = dataBase->getFreeIdInS_T();
-        int newSerialNumber = dataBase->getTermSerialNumber(term);
-        insertRows(newSerialNumber,1,QModelIndex());
-        QModelIndex updateIndex = this->index(newSerialNumber,0,QModelIndex());
-        setData(updateIndex, newIdSubj, INSERT_ID_ROLE);
-        setData(updateIndex, term, INSERT_NAME_ROLE);
-        setData(updateIndex, term, INSERT_TERM_ROLE);
-        dataBase->changeTermSerialNumber(term);
-    }
-    else
-    {
-        qDebug() << "Семестр уже имеется";
-    }
-}
-
 bool LectureModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     DataWrapper* dw = static_cast<DataWrapper*>(index.internalPointer());
     QString name, tag, comment;
-    int id, term, parentId;
+    int id, term;
     bool resultOfUpdate = false;
     switch(role)
     {
     case INSERT_NAME_ROLE:
         name = value.toString();
         dw->data->name = name;
-        resultOfUpdate = dataBase->updateName(-1, name);
+        resultOfUpdate = dataBase->updateName(dw->id, name, dw->type);
         break;
     case INSERT_ID_ROLE:
         id = value.toInt();
         dw->id = id;
         dw->number = index.row();
         dw->count = 0;
-        resultOfUpdate = dataBase->updateId(-1,id);
+        resultOfUpdate = dataBase->updateId(-1,id,dw->type);
         break;
     case INSERT_TAG_ROLE:
         tag = value.toString();
         dw->data->tags = tag;
+        resultOfUpdate = dataBase->updateTagP_I(dw->id,tag);
         break;
     case INSERT_COMMENT_ROLE:
         comment = value.toString();
         dw->data->comment = comment;
+        resultOfUpdate = dataBase->updateCommentP_I(dw->id, comment);
         break;
     case INSERT_TERM_ROLE:
         term = value.toInt();
-        resultOfUpdate = dataBase->updateTerm(-1,term);
+        resultOfUpdate = dataBase->updateTerm(dw->id,term);
         break;
     }
     emit dataChanged(index, index);
@@ -359,7 +342,14 @@ bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //�
         dw->type = static_cast<h_type>(newType);
         parentItem->children.insert(row,dw);
         parentItem->count = parentItem->count + 1;
-        dataBase->insertIntoSubjects_and_themes(-1,-1,newType,"-1-1-0",row,parentItem->id);
+        if(newType < 4)
+        {
+            dataBase->insertIntoSubjects_and_themes(-1,-1,newType,"-1-1-0",row,parentItem->id);
+        }
+        else
+        {
+            dataBase->insertIntoPictures_info(-1,"Пусто","Пусто","-1-1-0",row,parentItem->id);
+        }
     }
     endInsertRows();
     return true;
@@ -382,7 +372,7 @@ Qt::ItemFlags LectureModel::flags(const QModelIndex &index) const
 
 void LectureModel::insertUnit(QString unitName, int type)
 {
-    //selectedIndex проверяется на валидность в QML, перед вызовом setIndexFI
+    //selectedIndex проверяется на валидность в QML, перед вызовом setSelIndex
 
     int serialNumber;
     int term;
@@ -404,7 +394,7 @@ void LectureModel::insertUnit(QString unitName, int type)
         dataBase->changeTermSerialNumber(term);
     }
     else
-    {
+    {                
         DataWrapper* parentItem = static_cast<DataWrapper*>(selectedIndex.internalPointer());
         serialNumber = parentItem->count;
         term = 0;
@@ -415,6 +405,34 @@ void LectureModel::insertUnit(QString unitName, int type)
     setData(updateIndex, newId, INSERT_ID_ROLE);
     setData(updateIndex, unitName, INSERT_NAME_ROLE);
     setData(updateIndex, term, INSERT_TERM_ROLE);
+}
+
+void LectureModel::insertImage(QString path, QString comment, QString tags)
+{
+    QImage image;
+    int pos = path.lastIndexOf(':') + 1;
+    //path = path.mid(pos);
+    if(image.load(path))
+    {
+        QString folderPath = "../Pictures/";
+        pos = path.lastIndexOf('/') + 1;
+        path = folderPath.append(path.mid(pos));
+        image.save(path);
+        DataWrapper* selectedItem = static_cast<DataWrapper*>(selectedIndex.internalPointer());
+        if(selectedItem->type == IMAGE)
+        {
+            selectedIndex = selectedIndex.parent();
+            selectedItem = static_cast<DataWrapper*>(selectedIndex.internalPointer());
+        }
+        int serialNumber = selectedItem->count;
+        int newId = dataBase->getFreeIdPic_Inf();
+        insertRows(serialNumber,1,selectedIndex);
+        QModelIndex updateIndex = this->index(serialNumber,0,selectedIndex);
+        setData(updateIndex, newId, INSERT_ID_ROLE);
+        setData(updateIndex, path, INSERT_NAME_ROLE);
+        setData(updateIndex, tags, INSERT_TAG_ROLE);
+        setData(updateIndex, comment, INSERT_COMMENT_ROLE);
+    }
 
 
 }
@@ -486,7 +504,7 @@ bool LectureModel::showMenuItem(const QModelIndex &index, int type)
     }
 }
 
-void LectureModel::setIndexFI(const QModelIndex &index)
+void LectureModel::setSelIndex(const QModelIndex &index)
 {
     selectedIndex = index;
 }
@@ -507,7 +525,14 @@ bool LectureModel::removeRows(int row, int count, const QModelIndex &parent)
     for(int i = 0; i<count; i++)
     {
         dw = parentItem->children.at(row);
-        dataBase->deleteFromSubjects_and_themes(dw->id);
+        if(dw->type != IMAGE)
+        {
+            dataBase->deleteFromSubjects_and_themes(dw->id);
+        }
+        else
+        {
+            dataBase->deleteFromPictures_info(dw->id);
+        }
         parentItem->children.removeAt(row);
         parentItem->count--;
         foreach (DataWrapper* child, parentItem->children) {
@@ -516,6 +541,7 @@ bool LectureModel::removeRows(int row, int count, const QModelIndex &parent)
                 child->number--;
             }
         }
+        dataBase->decrimentSerialNimber(parentItem->id,row,parentItem->type);
     }
     endRemoveRows();
     return true;
@@ -534,8 +560,35 @@ void LectureModel::removeUnit()
     {
         parentIndex = selectedIndex.parent();
     }
+
+    //удаление всех "детей" элемента
+    QModelIndex indexLevel1, indexLevel2;
+    if(item->count > 0)
+    {
+        foreach (DataWrapper* dwLevel1, item->children) {
+            if(dwLevel1->count > 0)
+            {
+                indexLevel1 = index(dwLevel1->number,0,selectedIndex);
+                foreach (DataWrapper* dwLevel2, dwLevel1->children) {
+                    if(dwLevel2->count > 0)
+                    {
+                        indexLevel2 = index(dwLevel2->number,0,indexLevel1);
+                        removeRows(0,dwLevel2->count,indexLevel2);
+                    }
+                }
+                removeRows(0, dwLevel1->count,indexLevel1);
+            }
+        }
+        removeRows(0,item->count,selectedIndex);
+    }
+    //*******************************
+
     removeRows(serialNumber,1,parentIndex);
 }
 
-
+QString LectureModel::cutPath(QString url) {
+    int pos = url.indexOf('/') + 3;
+    url = url.mid(pos);
+    return url;
+}
 
