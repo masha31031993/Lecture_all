@@ -3,10 +3,13 @@ import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Styles 1.4
+import QtQuick.Window 2.0
 
 ApplicationWindow{
     id: applicationWindow
     visible: true
+    x: Screen.width/2 - applicationWindow.width/2
+    y: Screen.height/2 - applicationWindow.height/2
     width: 800
     height: 700
     title: qsTr("Лекции")
@@ -66,17 +69,17 @@ ApplicationWindow{
             MenuItem {
                 text: qsTr("&Оттенки серого")
                 onTriggered:
-                    image.source = myModel.grayColor(image.source);
+                    /*image.source = */myModel.grayColor(image.source);
             }
             MenuItem {
-                text: qsTr("&Гауссовое размытие")
-                //onTriggered:
+                text: qsTr("&Размытие по Гауссу")
+                onTriggered:
+                    /*image.source = */myModel.gauss(image.source);
             }
             MenuItem {
                 text: qsTr("&Деление")
-            }
-            MenuItem {
-                text: qsTr("&Откатить изменение")
+                onTriggered:
+                    image.source = myModel.division(image.source);
             }
         }
 
@@ -84,6 +87,8 @@ ApplicationWindow{
             title: qsTr("Печать")
             MenuItem {
                 text: qsTr("&Печать")
+                onTriggered:
+                    myModel.print(image.source);
             }
             MenuItem {
                 text: qsTr("&Печать со свойстами")
@@ -93,12 +98,8 @@ ApplicationWindow{
 
     Rectangle {
         id: form
-        width: applicationWindow.width
-        height: applicationWindow.height
-        radius: 0
-        anchors.rightMargin: 0
-        anchors.bottomMargin: 0
-        border.width: 0
+        width: 800
+        height: 700
         anchors.fill: parent
         gradient: Gradient {
 
@@ -125,12 +126,12 @@ ApplicationWindow{
         }
 
         TreeView {
-                    id: treeView
-                    x: 0
-                    y: 0
-                    width: parent.width/3
-                    height: parent.height/1.1
-                    model: myModel
+            id: treeView
+            x: 0
+            y: 0
+            width: parent.width/3
+            height: parent.height/1.1
+            model: myModel
 
                     TableViewColumn {
                         title: "Иерархия"
@@ -168,6 +169,7 @@ ApplicationWindow{
                                         var index_image = parent.indexAt(mouse.x, mouse.y);
                                         if(myModel.data(index_image,1)) {
                                             image.source = myModel.data(index_image,1);
+                                            slider_image.visible = true;
                                         }
                                     }
                                 }
@@ -183,47 +185,46 @@ ApplicationWindow{
 
             Rectangle {
                 id: r_button
-                x: 267
-                y: 0
-                width: form.width*2/3
-                height: 30 //ширина
+                anchors.left: treeView.right
+                width: form.width*2/3   //ширина
+                height: 30
                 color: "#00000000"
 
                 Button {
-                    id: button_turn
-                    x: 187
-                    y: 0
-                    width: 28
-                    height: 27
-                    iconSource: "right.png"
-                    enabled: false
-                    onClicked: {
-                       slider_rotation.visible = true;
-                   }
-
-                }
-
-                Button {
-                    id: button_cut
-                    enabled: false
-                    tooltip: "Выделите изображение"
-                    x: 98
-                    y: 0
-                    width: 83
-                    height: 27
-                    text: "Обрезать"
-                    //onclicked:
-                }
-                Button {
                     id: button_save
-                    x: 0
                     y: 0
+                    anchors.left: parent.left
+                    anchors.leftMargin: 5
                     width: 92
                     height: 27
                     text: "Сохранить"
                     enabled: false
                 }
 
+                Button {
+                    id: button_cut
+                    anchors.left: button_save.right
+                    anchors.leftMargin: 5
+                    enabled: false
+                    tooltip: "Выделите изображение"
+                    width: 92
+                    height: 27
+                    text: "Обрезать"
+                    //onclicked:
+                }
+
+                Button {
+                    id: button_turn
+                    anchors.left: button_cut.right
+                    anchors.leftMargin: 5
+                    width: 27
+                    height: 27
+                    iconSource: "right.png"
+                    enabled: false
+                    onClicked: {
+                       slider_rotation.visible = true;
+                   }
+                }
                 //Button {
                     //id: button_close
                     //x:604
@@ -234,10 +235,10 @@ ApplicationWindow{
                 //}
                 Slider {
                     id: slider_rotation
-                    x: 236
-                    y: 3
+                    anchors.left: button_turn.right
+                    anchors.leftMargin: 5
                     width: 107
-                    height: 22
+                    height: 27
                     stepSize: 0.001
                     visible: false
                     onEnabledChanged: {
@@ -245,76 +246,51 @@ ApplicationWindow{
                     }
                 }
 
+                Slider {
+                    id: slider_image
+                    anchors.left: slider_rotation.right
+                    anchors.leftMargin: 5
+                    width: 107
+                    height: 27
+                    value: 0.5
+                    maximumValue: 1
+                    visible: false
+                }
             }
+
             Rectangle {
                 id: r_image
-                x: 267
-                y: 30
+                anchors.top: r_button.bottom
+                anchors.left: treeView.right
                 width: form.width*2/3
                 height: form.height-30 //ширина
                 color: "#00000000"
 
                 Image {
                     id: image
-                    anchors.topMargin: 25
-                    anchors.bottomMargin: 85
-                    anchors.rightMargin: 22
                     anchors.fill: parent
-                    smooth: true
                     rotation: slider_rotation.value*360
-                    scale: 0.5
+                    scale: slider_image.value
 
                     MouseArea {
-                // действуем в пределах всего элемента Image
-                anchors.fill: parent
-                id: mouseArea_image
-                anchors.rightMargin: 0
-                anchors.bottomMargin: 0
-                anchors.leftMargin: 0
-                anchors.topMargin: 0
-                hoverEnabled: false
-                onEntered: {
-                        button_cut.enabled = true;
-                        button_save.enabled = true;
-                        button_turn.enabled = true;
+                        // действуем в пределах всего элемента Image
+                        anchors.fill: parent
+                        id: mouseArea_image
+                        hoverEnabled: false
+                        onEntered: {
+                            button_cut.enabled = true;
+                            button_save.enabled = true;
+                            button_turn.enabled = true;
+                        }
                     }
-                }
                 }
             }
 
-                Slider {
-                    id: sliderHorizontal_image
-                    x: 278
-                    y: 614
-                    width: 511
-                    height: 22
-                }
-
-
-
-                Slider {
-                    id: sliderVertical_image
-                    x: 767
-                    y: 30
-                    width: 22
-                    height: 585
-                    orientation: Qt.Vertical
-                    value: 1
-
-                }
-
-
-
-
-
-
-
-
         Rectangle {
             id: item_term
-            x: 221
-            y: 254
-            width: 377
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 370
             height: 132
             visible: false
             color: "#55aaff"
@@ -322,9 +298,12 @@ ApplicationWindow{
 
             Button {
                 id: button_ok
-                x: 151
-                y: 82
+                width: 92
+                height: 27
                 text: qsTr("ОК")
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 10
+                anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
                     //myModel.insertTerm(textField_term.text);
                     myModel.insertUnit(textField_term.text,1);
@@ -335,50 +314,57 @@ ApplicationWindow{
 
             Button {
                 id: button_close
-                x: 348
-                y: 1
-                width: 28
+                anchors.right: parent.right
+                anchors.rightMargin: 5
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                width: 27
                 height: 27
                 iconSource: "close.png"
                 onClicked: item_term.visible=false
             }
 
             TextField {
-                x: 66
-                y: 31
-                width: 250
-                height: 33
                 id: textField_term
+                width: 305
+                anchors.top: button_close.bottom
+                anchors.topMargin: 15
+                anchors.bottom: button_ok.top
+                anchors.bottomMargin: 15
+                anchors.horizontalCenter: parent.horizontalCenter
                 placeholderText: qsTr("Введите номер семестра")
             }
-
-
         }
 
         Rectangle {
             id: item_subject
-            x: 195
-            y: 201
-            width: 429
-            height: 238
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 370
+            height: 132
             visible: false
             color: "#55aaff"
             border.width: 1
 
          TextField {
-                x: 66
-                y: 31
-                width: 250
-                height: 33
                 id: textField_subject
+                width: 305
+                anchors.top: button_close1.bottom
+                anchors.topMargin: 15
+                anchors.bottom: button_ok1.top
+                anchors.bottomMargin: 15
+                anchors.horizontalCenter: parent.horizontalCenter
                 placeholderText: qsTr("Введите название предмета")
 
             }
 
             Button {
                 id: button_ok1
-                x: 172
-                y: 192
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 92
+                height: 27
                 text: qsTr("ОК")
                 onClicked: {
                     //myModel.insertSubject(textField_subject.text, treeView.currentIndex);
@@ -391,9 +377,11 @@ ApplicationWindow{
 
             Button {
                 id: button_close1
-                x: 398
-                y: 3
-                width: 28
+                anchors.right: parent.right
+                anchors.rightMargin: 5
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                width: 27
                 height: 27
                 iconSource: "close.png"
                 onClicked: item_subject.visible=false
@@ -404,27 +392,32 @@ ApplicationWindow{
 
         Rectangle {
             id: item_theme
-            x: 221
-            y: 254
-            width: 377
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 370
             height: 132
             visible: false
             color: "#55aaff"
             border.width: 1
 
             TextField {
-                   x: 66
-                   y: 31
-                   width: 250
-                   height: 33
                    id: textField_theme
+                   width: 305
+                   anchors.top: button_close2.bottom
+                   anchors.topMargin: 15
+                   anchors.bottom: button_ok2.top
+                   anchors.bottomMargin: 15
+                   anchors.horizontalCenter: parent.horizontalCenter
                    placeholderText: qsTr("Введите название темы")
                }
 
             Button {
                 id: button_ok2
-                x: 151
-                y: 82
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 92
+                height: 27
                 text: qsTr("ОК")
                 onClicked: {
                     myModel.insertUnit(textField_theme.text,3);
@@ -434,9 +427,11 @@ ApplicationWindow{
             }
             Button {
                 id: button_close2
-                x: 348
-                y: 1
-                width: 28
+                anchors.right: parent.right
+                anchors.rightMargin: 5
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                width: 27
                 height: 27
                 iconSource: "close.png"
                 onClicked: item_theme.visible=false
@@ -445,10 +440,10 @@ ApplicationWindow{
 
         Rectangle {
             id: item_image
-            x: 195
-            y: 201
-            width: 429
-            height: 238
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 370
+            height: 228
             border.width: 1
             visible: false
             color: "#55aaff"
@@ -456,27 +451,33 @@ ApplicationWindow{
 
             Button {
                 id: button_ok3
-                x: 173
-                y: 191
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 92
+                height: 27
                 text: qsTr("ОК")
                 //onclicked:
             }
             Button {
                 id: button_close3
-                x: 393
-                y: 8
-                width: 28
+                anchors.right: parent.right
+                anchors.rightMargin: 5
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                width: 27
                 height: 27
                 iconSource: "close.png"
                 onClicked: item_image.visible=false
             }
 
             TextField {
-                   x: 90
-                   y: 44
-                   width: 250
-                   height: 33
                    id: textField_path
+                   width: 305
+                   height: 33
+                   anchors.horizontalCenter: parent.horizontalCenter
+                   anchors.top: button_close3.bottom
+                   anchors.topMargin: 15
                    placeholderText: qsTr("Путь к изображению")
 
                    MouseArea {
@@ -501,20 +502,23 @@ ApplicationWindow{
                                 }
             }
 
-            TextField {
-                   x: 90
-                   y: 93
-                   width: 250
-                   height: 33
+            TextField {                   
                    id: textField_image_comment
+                   width: 305
+                   anchors.bottom: textField_image_tags.top
+                   anchors.bottomMargin: 15
+                   anchors.top: textField_path.bottom
+                   anchors.topMargin: 15
+                   anchors.horizontalCenter: parent.horizontalCenter
                    placeholderText: qsTr("Введите комментарий")
-               }
+            }
             TextField {
-                   x: 90
-                   y: 142
-                   width: 250
-                   height: 33
                    id: textField_image_tags
+                   width: 305
+                   height: 33
+                   anchors.bottom: button_ok3.top
+                   anchors.bottomMargin: 15
+                   anchors.horizontalCenter: parent.horizontalCenter
                    placeholderText: qsTr("Введите тэги")
             }
 

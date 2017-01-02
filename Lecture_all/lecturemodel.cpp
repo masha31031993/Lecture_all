@@ -1,5 +1,11 @@
 #include "lecturemodel.h"
 #include <QImage>
+#include <QColor>
+#include <QPixmap>
+#include <QtPrintSupport/QPrinter>
+#include <QtPrintSupport/QPrintDialog>
+#include <QtPrintSupport/QPrintPreviewDialog>
+#include <QPainter>
 
 LectureModel::LectureModel(QString dbPath, QObject *parent)
     : QAbstractItemModel(parent)
@@ -429,28 +435,25 @@ void LectureModel::insertUnit(QString unitName, int type)
         qDebug() << "Файл не записался";
 }*/
 
-QVariant LectureModel::grayColor(QString str) {
-    QString path = str;
-    int pos = path.lastIndexOf(':') + 1;
-    path = path.mid(pos);
+/*QVariant*/ void LectureModel::grayColor(QUrl url) {
     QImage image;
-    bool ok = image.load(path);
+    bool ok = image.load(url.toLocalFile());
     if (ok == false)
         qDebug()<<"Изображение не считалось";
     if(!image.isNull()) {
         QImage image_gray = image;
         image_gray = image_gray.convertToFormat(QImage::Format_Grayscale8);
 
-        QString path_gray = path;
-        int pos_gray = path_gray.lastIndexOf('.');
-        path_gray= path_gray.mid(0,path_gray.lastIndexOf('.'))+"_gray"+path_gray.mid(pos_gray);
+        QString path_gray = path(url.toLocalFile(),"_gray");
+        /*int pos_gray = path_gray.lastIndexOf('.');
+        path_gray= path_gray.mid(0,path_gray.lastIndexOf('.'))+"_gray"+path_gray.mid(pos_gray);*/
         bool ok_gray = image_gray.save(path_gray);
         if (ok_gray == false)
             qDebug()<<"Изображение не сохранилось";
-        return QUrl::fromLocalFile(path_gray);
+        //return QUrl::fromLocalFile(path_gray);
     }
     // изменить путь изображения в БД
-   return QVariant();
+   //return QVariant();
 }
 
 bool LectureModel::showMenuItem(const QModelIndex &index, int type)
@@ -491,8 +494,149 @@ void LectureModel::setIndexFI(const QModelIndex &index)
 }
 
 
-QString LectureModel::cutPath(QString url) {
-    int pos = url.indexOf('/') + 2;
-    url = url.mid(pos);
-    return url;
+QString LectureModel::cutPath(QUrl/*QString*/ url) {
+    //int pos = url.indexOf('/') + 2;
+    //url = url.mid(pos);
+    //return url;
+    return url.toLocalFile();
+}
+
+/*QVariant*/ void LectureModel::gauss(QUrl url) {
+    QImage image;
+    int k = 15;
+    bool ok = image.load(path(url.toLocalFile(),"_gray"));
+    if (ok == false)
+        qDebug()<<"Изображение не считалось";
+    if(!image.isNull()) {
+        int h = image.height();
+        int w = image.width();
+        QColor p_r,p,p_l;
+        int red, green, blue;
+        // по горизонтали
+        while (k!=0) {
+        for (int i=1; i<w-1; i++)
+            for (int j=0; j<h; j++)
+            {
+                p_l = image.pixelColor(i-1,j);
+                p = image.pixelColor(i,j);
+                p_r = image.pixelColor(i+1,j);
+
+                red = (p_l.red() + p.red() + p_r.red()) / 3;
+                green = (p_l.green() + p.green() + p_r.green()) / 3;
+                blue = (p_l.blue() + p.blue() + p_r.blue()) / 3;
+
+                QColor p_new(red,green,blue);
+                image.setPixelColor(i,j,p_new);
+            }
+        // по вертикали
+        for (int i=0; i<w; i++)
+            for (int j=1; j<h-1; j++)
+            {
+                p_l = image.pixelColor(i,j-1);
+                p = image.pixelColor(i,j);
+                p_r = image.pixelColor(i,j+1);
+
+                red = (p_l.red() + p.red() + p_r.red()) / 3;
+                green = (p_l.green() + p.green() + p_r.green()) / 3;
+                blue = (p_l.blue() + p.blue() + p_r.blue()) / 3;
+
+                QColor p_new(red,green,blue);
+                image.setPixelColor(i,j,p_new);
+            }
+        k--;
+        }
+        QString path_gauss = path(url.toLocalFile(),"_gauss");
+        bool ok_gauss = image.save(path_gauss);
+        if (ok_gauss == false)
+        qDebug()<<"Изображение не сохранилось";
+        //return QUrl::fromLocalFile(path_gauss);
+    }
+   //return QVariant();
+}
+
+void LectureModel::print(QUrl url)
+
+{
+    QPixmap pix;
+    pix.load(url.toLocalFile());
+    QPrinter printer;
+    /*QPrintPreviewDialog *dlg = new QPrintPreviewDialog(&printer,0); // ????
+    if(dlg->exec() == QDialog::Accepted)
+    {
+        QPainter painter(&printer);
+        painter.drawPixmap(QPoint(0, 0), pix);
+        painter.end();
+    }*/
+    QPrintDialog *dialog = new QPrintDialog(&printer,0);
+    if(dialog->exec() == QDialog::Accepted)
+    {
+        QPainter painter(&printer);
+        painter.drawPixmap(QPoint(0, 0), pix);
+        painter.end();
+    }
+}
+
+QString LectureModel::path(QString p, QString str) {
+    QString s = str;
+    if (str != "")
+    {
+        int pos = p.lastIndexOf('.');
+        p= p.mid(0,p.lastIndexOf('.'))+str+p.mid(pos);
+        return p;
+    }
+    else
+    {
+        int pos = p.lastIndexOf('.');
+        p= p.mid(0,p.lastIndexOf('.'))+p.mid(pos);
+        return p;
+    }
+}
+
+QVariant LectureModel::division(QUrl url) {
+    QImage image_gray, image_gauss, image;
+    image.load(url.toLocalFile());
+    bool ok_gray = image_gray.load(path(url.toLocalFile(),"_gray"));
+    if (ok_gray == false)
+        qDebug()<<"Изображение в серых тонах не считалось";
+    bool ok_gauss= image_gauss.load(path(url.toLocalFile(),"_gauss"));
+    if (ok_gauss == false)
+        qDebug()<<"Изображение в серых тонах не считалось";
+    if(!image_gray.isNull() && !image_gauss.isNull()) {
+        int h = image.height();
+        int w = image.width();
+        QColor p_gray, p_gauss;
+        int red, green, blue;
+       for (int i=0; i<w; i++)
+            for (int j=0; j<h; j++)
+            {
+                p_gray = image_gray.pixelColor(i,j);
+                p_gauss = image_gauss.pixelColor(i,j);
+
+                if (p_gray.red() == 0)
+                    p_gray.setRed(1);
+                if (p_gauss.red() == 0)
+                    p_gauss.setRed(1);
+                if (p_gray.green() == 0)
+                    p_gray.setGreen(1);
+                if (p_gauss.green() == 0)
+                    p_gauss.setGreen(1);
+                if (p_gray.blue() == 0)
+                    p_gray.setBlue(1);
+                if (p_gauss.blue() == 0)
+                    p_gauss.setBlue(1);
+
+                red = (p_gray.red() / p_gauss.red() * 255);
+                green =  (p_gray.green() / p_gauss.green() * 255);
+                blue = (p_gray.blue() / p_gauss.blue() * 255);
+
+                QColor p_new(red,green,blue);
+                image.setPixelColor(i,j,p_new);
+            }
+       QString path_image = path(url.toLocalFile(),"_d");
+        bool ok = image.save(path_image);
+        if (ok == false)
+        qDebug()<<"Изображение не сохранилось";
+        return QUrl::fromLocalFile(path_image);
+    }
+   return QVariant();
 }

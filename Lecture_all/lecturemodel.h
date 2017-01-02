@@ -72,8 +72,13 @@ public:
     Q_INVOKABLE void insertUnit(QString unitName, int type);
 
 
-    Q_INVOKABLE QVariant grayColor(QString path);
-    Q_INVOKABLE QString cutPath(QString url);
+    Q_INVOKABLE /*QVariant*/ void grayColor(QUrl path);
+    Q_INVOKABLE void print(QUrl url);
+    Q_INVOKABLE QString cutPath(QUrl url);
+    Q_INVOKABLE /*QVariant*/ void gauss(QUrl url);
+    QString path(QString p,QString str);
+    Q_INVOKABLE QVariant division(QUrl url);
+
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
