@@ -10,12 +10,10 @@
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
 
 enum user_roles{INSERT_ID_ROLE = Qt::UserRole + 1,
-                INSERT_TYPE_ROLE,
                 INSERT_NAME_ROLE,
                 INSERT_TAG_ROLE,
                 INSERT_COMMENT_ROLE,
-                INSERT_TERM_ROLE,
-                INSERT_PARENT_ID_ROLE};
+                INSERT_TERM_ROLE};
 
 struct IData
 {
@@ -68,23 +66,26 @@ public:
 
     bool insertRows(int row, int count, const QModelIndex &parent);
 
-    Q_INVOKABLE void insertTerm(QString sterm);
-    Q_INVOKABLE void insertUnit(QString unitName, int type);
+    //удаление строки из модели и БД
 
+    bool removeRows(int row, int count, const QModelIndex &parent);
+
+    Q_INVOKABLE void insertUnit(QString unitName, int type);
+    Q_INVOKABLE void insertImage(QString path, QString comment, QString tags);
+
+    Q_INVOKABLE void removeUnit();
 
     Q_INVOKABLE /*QVariant*/ void grayColor(QUrl path);
-    Q_INVOKABLE void print(QUrl url);
+    Q_INVOKABLE void printImage(QUrl url);
     Q_INVOKABLE QString cutPath(QUrl url);
     Q_INVOKABLE /*QVariant*/ void gauss(QUrl url);
     QString path(QString p,QString str);
     Q_INVOKABLE QVariant division(QUrl url);
 
-
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
-    //установка значения indexForInsert
-    Q_INVOKABLE void setIndexFI(const QModelIndex &index);
-
+    //установка значения selectedIndex
+    Q_INVOKABLE void setSelIndex(const QModelIndex &index);
 
 private:
 
@@ -92,7 +93,7 @@ private:
     DataBaseHandler *dataBase;
     DataWrapper* root;
     int idForInsert;
-    QModelIndex indexForInsert;  // используется как родительский индекс для добавления предмета, темы и картинки
+    QModelIndex selectedIndex;  // используется как родительский индекс для добавления предмета, темы и картинки
 
    //static const int INSERT_ID_ROLE = Qt::UserRole + 1;
    //static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;

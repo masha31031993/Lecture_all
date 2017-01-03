@@ -52,8 +52,6 @@ int DataBaseHandler::getRowCountOfChild(int parentId, int type)
     return row_count;
 }
 
-
-
 void DataBaseHandler::printSubjects_and_themes()
 {
     QSqlQuery queryOfSubjects_and_themes;
@@ -63,7 +61,7 @@ void DataBaseHandler::printSubjects_and_themes()
     else
     {
         QSqlRecord rec = queryOfSubjects_and_themes.record();
-        int id_subj = 0,
+        int idSubj = 0,
                 term = 0,
                 type = 0,
                 serial_number = 0,
@@ -77,13 +75,13 @@ void DataBaseHandler::printSubjects_and_themes()
                  << "\tSerial_number"
                  << "\tId_parent\n";
         while (queryOfSubjects_and_themes.next()) {
-            id_subj = queryOfSubjects_and_themes.value(rec.indexOf("Id_subj")).toInt();
+            idSubj = queryOfSubjects_and_themes.value(rec.indexOf("Id_subj")).toInt();
             term = queryOfSubjects_and_themes.value(rec.indexOf("Term")).toInt();
             type = queryOfSubjects_and_themes.value(rec.indexOf("Type")).toInt();
             serial_number = queryOfSubjects_and_themes.value(rec.indexOf("Serial_number")).toInt();
             id_parent = queryOfSubjects_and_themes.value(rec.indexOf("Id_parent")).toInt();
             nameSubj = queryOfSubjects_and_themes.value(rec.indexOf("Name_subj")).toString();
-            qDebug() << id_subj
+            qDebug() << idSubj
                      << "\t" << term
                      << "\t" << type
                      << "\t" << nameSubj
@@ -200,9 +198,6 @@ void DataBaseHandler::deleteFromPictures_info(int idImage)
     QString strDelete, strQuery;
     strDelete = "DELETE FROM pictures_info WHERE (Id_image = %1);";
     strQuery = strDelete.arg(str_idSubj);
-
-    QString strTest = "DELETE FROM subjects_and_themes WHERE (Id_subj = 100);";
-
     QSqlQuery query;
     if(!query.exec(strQuery))
     {
@@ -230,9 +225,24 @@ void DataBaseHandler::updateParAndNumSubjects_and_themes(int idSubj, int newIdPa
 
 int DataBaseHandler::getFreeIdInS_T()
 {
-    int freeId = -1;
+    int freeId = 0;
     QSqlQuery query;
-    if(!query.exec("SELECT MAX(Id_subj) FROM Subjects_and_themes;"))
+    if(!query.exec("SELECT MAX(Id_subj) FROM subjects_and_themes;"))
+    {
+        return freeId;
+    }
+    if(query.next())
+    {
+        freeId = query.value(0).toInt() + 1;
+    }
+    return freeId;
+}
+
+int DataBaseHandler::getFreeIdPic_Inf()
+{
+    int freeId = 0;
+    QSqlQuery query;
+    if(!query.exec("SELECT MAX(Id_image) FROM pictures_info;"))
     {
         return freeId;
     }
@@ -250,7 +260,7 @@ int DataBaseHandler::getTermSerialNumber(int term)
         return -1;
     }
     QString strSearch;
-    strSearch = "SELECT Id_subj, Term, Serial_number FROM Subjects_and_themes WHERE (Type = 1) and (Term < %1) ORDER BY Term;";
+    strSearch = "SELECT Id_subj, Term, Serial_number FROM subjects_and_themes WHERE (Type = 1) and (Term < %1) ORDER BY Term;";
 
     QString strQuery;
     strQuery = strSearch.arg(term);
@@ -276,7 +286,7 @@ bool DataBaseHandler::hasTerm(int term)
         return flag;
     }
 
-    QString strSearch = "SELECT Term FROM Subjects_and_themes WHERE Term = %1;";
+    QString strSearch = "SELECT Term FROM subjects_and_themes WHERE Term = %1;";
     QString strQuery = strSearch.arg(term);
     QSqlQuery query;
     if(!query.exec(strQuery))
@@ -294,9 +304,8 @@ bool DataBaseHandler::hasTerm(int term)
 
 void DataBaseHandler::changeTermSerialNumber(int term)
 {
-    QString strUpdate = "UPDATE Subjects_and_themes SET Serial_number = Serial_number + 1 WHERE Term > %1;";
+    QString strUpdate = "UPDATE subjects_and_themes SET Serial_number = Serial_number + 1 WHERE Term > %1;";
     QString strQuery = strUpdate.arg(term);
-
     QSqlQuery query;
     if(!query.exec(strQuery))
     {
@@ -304,9 +313,28 @@ void DataBaseHandler::changeTermSerialNumber(int term)
     }
 }
 
+void DataBaseHandler::decrimentSerialNimber(int parentId, int number, int type)
+{
+    QString strUpdate;
+    if(type < 3)
+    {
+        strUpdate = "UPDATE subjects_and_themes SET Serial_number = Serial_number - 1 WHERE (Id_parent = %1) and (Serial_number > %2);";
+    }
+    else
+    {
+        strUpdate = "UPDATE pictures_info SET Number = Number - 1 WHERE (Id_parent = %1) and (Number > %2);";
+    }
+    QString strQuery = strUpdate.arg(QString::number(parentId)).arg(QString::number(number));
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу уменьшить порядковый номер";
+    }
+}
+
 int DataBaseHandler::getIdTerm(QString term)
 {
-    QString strSelect = "SELECT Id_subj FROM Subjects_and_themes WHERE Term = %1";
+    QString strSelect = "SELECT Id_subj FROM subjects_and_themes WHERE Term = %1";
     QString strQuery = strSelect.arg(term);
 
     QSqlQuery query;
@@ -331,19 +359,11 @@ int DataBaseHandler::getSubjSerialNumber(int idParent)
     return serialNumber;
 }
 
-bool DataBaseHandler::updateTerm(int id_subj,int newTerm)
+bool DataBaseHandler::updateTerm(int idSubj,int newTerm)
 {
     QString strUpdate, strQuery;
-    if(id_subj < 1)
-    {
-        strUpdate = "UPDATE Subjects_and_themes SET Term = %1 WHERE Term = -1;";
-        strQuery = strUpdate.arg(QString::number(newTerm));
-    }
-    else
-    {
-        strUpdate = "UPDATE Subjects_and_themes SET Term = %1 WHERE Id_subj = %2;";
-        strQuery = strUpdate.arg(QString::number(newTerm)).arg(QString::number(id_subj));
-    }
+    strUpdate = "UPDATE subjects_and_themes SET Term = %1 WHERE Id_subj = %2;";
+    strQuery = strUpdate.arg(QString::number(newTerm)).arg(QString::number(idSubj));
     QSqlQuery query;
     if(!query.exec(strQuery))
     {
@@ -353,19 +373,18 @@ bool DataBaseHandler::updateTerm(int id_subj,int newTerm)
     return true;
 }
 
-bool DataBaseHandler::updateId(int id_subj, int newId)
+bool DataBaseHandler::updateId(int id, int newId,int type)
 {
     QString strUpdate, strQuery;
-    if(id_subj < 1)
+    if(type == 4)
     {
-        strUpdate = "UPDATE Subjects_and_themes SET Id_subj = %1 WHERE Id_subj = -1;";
-        strQuery = strUpdate.arg(QString::number(newId));
+        strUpdate = "UPDATE pictures_info SET Id_image = %1 WHERE Id_image = %2;";
     }
     else
     {
-        strUpdate = "UPDATE Subjects_and_themes SET Id_subj = %1 WHERE Id_subj = %2;";
-        strQuery = strUpdate.arg(QString::number(newId)).arg(QString::number(id_subj));
+        strUpdate = "UPDATE subjects_and_themes SET Id_subj = %1 WHERE Id_subj = %2;";
     }
+    strQuery = strUpdate.arg(QString::number(newId)).arg(QString::number(id));
     QSqlQuery query;
     if(!query.exec(strQuery))
     {
@@ -375,19 +394,11 @@ bool DataBaseHandler::updateId(int id_subj, int newId)
     return true;
 }
 
-bool DataBaseHandler::updateType(int id_subj, int newType)
+bool DataBaseHandler::updateType(int idSubj, int newType)
 {
     QString strUpdate, strQuery;
-    if(id_subj < 1)
-    {
-        strUpdate = "UPDATE Subjects_and_themes SET Type = %1 WHERE Type = -1;";
-        strQuery = strUpdate.arg(QString::number(newType));
-    }
-    else
-    {
-        strUpdate = "UPDATE Subjects_and_themes SET Type = %1 WHERE Id_subj = %2;";
-        strQuery = strUpdate.arg(QString::number(newType)).arg(QString::number(id_subj));
-    }
+    strUpdate = "UPDATE subjects_and_themes SET Type = %1 WHERE Id_subj = %2;";
+    strQuery = strUpdate.arg(QString::number(newType)).arg(QString::number(idSubj));
     QSqlQuery query;
     if(!query.exec(strQuery))
     {
@@ -397,19 +408,18 @@ bool DataBaseHandler::updateType(int id_subj, int newType)
     return true;
 }
 
-bool DataBaseHandler::updateName(int id_subj, QString newName)
+bool DataBaseHandler::updateName(int id, QString newName, int type)
 {
     QString strUpdate, strQuery;
-    if(id_subj < 1)
+    if(type == 4)
     {
-        strUpdate = "UPDATE Subjects_and_themes SET Name_subj = '%1' WHERE Name_subj = '-1-1-0';";
-        strQuery = strUpdate.arg(newName);
+        strUpdate = "UPDATE pictures_info SET Image_path = '%1' WHERE Id_image = %2;";
     }
     else
     {
-        strUpdate = "UPDATE Subjects_and_themes SET Name_subj = '%1' WHERE Id_subj = %2;";
-        strQuery = strUpdate.arg(newName).arg(QString::number(id_subj));
+        strUpdate = "UPDATE subjects_and_themes SET Name_subj = '%1' WHERE Id_subj = %2;";
     }
+    strQuery = strUpdate.arg(newName).arg(QString::number(id));
     QSqlQuery query;
     if(!query.exec(strQuery))
     {
@@ -419,23 +429,50 @@ bool DataBaseHandler::updateName(int id_subj, QString newName)
     return true;
 }
 
-bool DataBaseHandler::updateParentId(int id_subj, int newParentId)
+bool DataBaseHandler::updateParentId(int id, int newParentId, int type)
 {
     QString strUpdate, strQuery;
-    if(id_subj < 1)
+    if(type == 4)
     {
-        strUpdate = "UPDATE Subjects_and_themes SET Id_parent = %1 WHERE Id_parent = -1;";
-        strQuery = strUpdate.arg(QString::number(newParentId));
+        strUpdate = "UPDATE pictures_info SET Id_parent = '%1' WHERE Id_image = %2;";
     }
     else
     {
-        strUpdate = "UPDATE Subjects_and_themes SET Id_parent = %1 WHERE Id_subj = %2;";
-        strQuery = strUpdate.arg(QString::number(newParentId)).arg(QString::number(id_subj));
+        strUpdate = "UPDATE subjects_and_themes SET Id_parent = '%1' WHERE Id_subj = %2;";
     }
+    strQuery = strUpdate.arg(newParentId).arg(QString::number(id));
     QSqlQuery query;
     if(!query.exec(strQuery))
     {
         qDebug() << "Не могу обновить ParentId";
+        return false;
+    }
+    return true;
+}
+
+bool DataBaseHandler::updateTagP_I(int idImage, QString newTag)
+{
+    QString strUpdate, strQuery;
+    strUpdate = "UPDATE pictures_info SET Tags = '%1' WHERE Id_image = %2;";
+    strQuery = strUpdate.arg(newTag).arg(QString::number(idImage));
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу обновить Tags";
+        return false;
+    }
+    return true;
+}
+
+bool DataBaseHandler::updateCommentP_I(int idImage, QString newComment)
+{
+    QString strUpdate, strQuery;
+    strUpdate = "UPDATE pictures_info SET Comment = '%1' WHERE Id_image = %2;";
+    strQuery = strUpdate.arg(newComment).arg(QString::number(idImage));
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу обновить Comment";
         return false;
     }
     return true;
