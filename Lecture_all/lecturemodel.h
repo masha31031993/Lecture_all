@@ -75,12 +75,17 @@ public:
 
     Q_INVOKABLE void removeUnit();
 
-    Q_INVOKABLE /*QVariant*/ void grayColor(QUrl path);
+    QString /*void*/ grayColor(QString path);
     Q_INVOKABLE void printImage(QUrl url);
     Q_INVOKABLE QString cutPath(QUrl url);
-    Q_INVOKABLE /*QVariant*/ void gauss(QUrl url);
+    QString /*void*/ gauss(QString url);
     QString path(QString p,QString str);
-    Q_INVOKABLE QVariant division(QUrl url);
+    QString division(QString path_gray, QString path_gauss);
+    Q_INVOKABLE QVariant cut(int x, int y, int n_x, int n_y, QUrl url);
+    //Q_INVOKABLE QVariant paintRect(int x, int y, int n_x, int n_y, QUrl url);
+    Q_INVOKABLE QVariant save(QUrl url, qreal scaleFactor);
+    Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
+    Q_INVOKABLE QUrl improveImage(QUrl url);
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
@@ -94,7 +99,7 @@ private:
     DataWrapper* root;
     int idForInsert;
     QModelIndex selectedIndex;  // используется как родительский индекс для добавления предмета, темы и картинки
-
+    QModelIndex indexOfImage;
    //static const int INSERT_ID_ROLE = Qt::UserRole + 1;
    //static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;
    //static const int INSERT_NAME_ROLE = Qt::UserRole + 3;
