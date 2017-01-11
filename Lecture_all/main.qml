@@ -4,10 +4,8 @@ import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Window 2.0
-import QtQml.Models 2.2
 
-ApplicationWindow
-{
+ApplicationWindow {
     id: applicationWindow
     visible: true
     x: Screen.width/2 - applicationWindow.width/2
@@ -23,6 +21,7 @@ ApplicationWindow
                 border.width: 1
             }
         }
+
         /*Menu {
             title: qsTr("Файл")
             MenuItem {
@@ -30,49 +29,59 @@ ApplicationWindow
                 onTriggered: Qt.quit()
             }
         }*/
+
         Menu {
             id: menuAdd
             visible: false
-            title: qsTr("Добавить")            
+            title: qsTr("Добавить")
+
             MenuItem {
                 id: addTerm
                 text: qsTr("&Добавить семестр")
                 onTriggered: item_term.visible=true
             }
+
             MenuItem {
                 id: addSubject
                 text: qsTr("&Добавить предмет")
                 onTriggered: item_subject.visible=true
             }
+
             MenuItem {
                 id: addTheme
                 text: qsTr("&Добавить тему")
                 onTriggered: item_theme.visible=true
             }
+
             MenuItem {
                 id: addImage
                 text: qsTr("&Добавить изображение")
                 onTriggered: item_image.visible=true
             }
+
             MenuItem {
                 text: qsTr("&Удалить элемент")
                 onTriggered: myModel.removeUnit()
             }
         }
+
         Menu {
             id: menuPrintImage
             enabled: false
             title: qsTr("Печать")
+
             MenuItem {
                 text: qsTr("&Печать изображения")
                 onTriggered: myModel.printImage(image.source)
             }
+
             MenuItem {
                 text: qsTr("&Печать со свойстами")
                 onTriggered: item_print.visible = true
             }
         }
     }
+
     TabView {
         id: tabView
         anchors.fill: parent
@@ -96,11 +105,14 @@ ApplicationWindow
                 }
             }
         }
+
         Tab {
             id: image_one
             title: "Изображение"
+
             Background {
                 id: form_image_one
+
                 TreeView {
                     id: treeView
                     x: 0
@@ -108,23 +120,23 @@ ApplicationWindow
                     width: parent.width/3
                     height: parent.height/1.1
                     model: myModel
-                    selection: ItemSelectionModel {
-                              model: myModel
-                         }
+
                     TableViewColumn {
                         title: "Оглавление"
                         role: "display"
                         width: 500
                     }
+
                     MouseArea {
                         id: mouseArea_tree
                         anchors.bottomMargin: 21
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.RightButton | Qt.LeftButton
-                        onEntered:
+                        onEntered: {
                             if (myModel.rowCount(treeView.rootIndex) === 0)
                                 item_term.visible = true
+                        }
                         onClicked: {
                             switch (mouse.button) {
                             case Qt.LeftButton:
@@ -154,12 +166,14 @@ ApplicationWindow
                         }
                     }
                 }
+
                 Rectangle {
                     id: r_button
                     anchors.left: treeView.right
                     width: form_image_one.width*2/3   //ширина
                     height: 30
                     color: "#00000000" // прозрачность
+
                     Button {
                         id: button_improve
                         y: 0
@@ -171,8 +185,11 @@ ApplicationWindow
                         enabled: false
                         onClicked: {
                             image.source = myModel.improveImage(image.source)
+                            image.cache = false
+                            image.sourceChanged()
                         }
                     }
+
                     Button {
                         id: button_save
                         y: 0
@@ -186,6 +203,7 @@ ApplicationWindow
                             image.source = myModel.save(image.source, image.scale)
                         }
                     }
+
                     Button {
                         id: button_cut
                         anchors.left: button_save.right
@@ -196,13 +214,16 @@ ApplicationWindow
                         text: "Обрезать"
                         property bool click: false
                         onClicked: {
-                            image.source = myModel.cut(canvas.firstX,canvas.firstY,canvas.lastX,canvas.lastY,image.source)
-                            button_save.enabled = true
-                            button_turn.enabled = true
                             click = true
                             canvas.requestPaint()
+                            image.source = myModel.cut(canvas.firstX,canvas.firstY,canvas.lastX,canvas.lastY,image.source)
+                            image.cache = false
+                            image.sourceChanged()
+                            button_save.enabled = true
+                            button_turn.enabled = true
                         }
                     }
+
                     Button {
                         id: button_turn
                         anchors.left: button_cut.right
@@ -213,6 +234,7 @@ ApplicationWindow
                         enabled: false
                         onClicked: slider_rotation.visible = true
                     }
+
                     Slider {
                         id: slider_rotation
                         anchors.left: button_turn.right
@@ -223,6 +245,7 @@ ApplicationWindow
                         visible: false
                         onEnabledChanged: image.rotation = slider_rotation.value
                     }
+
                     Slider {
                         id: slider_image
                         width: 107
@@ -234,6 +257,7 @@ ApplicationWindow
                         visible: false
                     }
                 }
+
                 Rectangle {
                     id: r_image
                     anchors.top: r_button.bottom
@@ -241,15 +265,18 @@ ApplicationWindow
                     width: form_image_one.width*2/3
                     height: form_image_one.height-30
                     color: "#00000000"
+
                     ScrollView {
                         id: scrollView
                         anchors.fill: parent
+
                         Image {
                             id: image
                             rotation: slider_rotation.value*360
                             scale: slider_image.value
                             mipmap: true
                             fillMode: Image.PreserveAspectFit
+
                             Canvas {
                                 id: canvas
                                 anchors.fill: parent
@@ -262,7 +289,7 @@ ApplicationWindow
                                     if (button_cut.click == true)
                                         ctx.clearRect(0,0,canvas.width,canvas.height)
                                     else {
-                                        ctx.lineWidth = 1
+                                        ctx.lineWidth = 2
                                         ctx.clearRect(0,0,canvas.width,canvas.height)
                                         ctx.beginPath()
                                         ctx.rect(firstX,firstY,lastX - firstX,lastY - firstY)
@@ -270,6 +297,7 @@ ApplicationWindow
                                     }
                                 }
                             }
+
                             MouseArea {
                                 anchors.fill: parent // действуем в пределах всего элемента Image
                                 id: mouseArea_image
@@ -300,32 +328,32 @@ ApplicationWindow
                                     }
                                     canvas.requestPaint()
                                 }
+                                onClicked: {
+                                    if (mouse.button === Qt.RightButton) {
+                                        button_cut.click = true
+                                        canvas.requestPaint()
+                                    }
+                                }
                             }
                         }
                     }
                 }
-
-                Label {
-                    id: text1
-                    x: 5
-                    y: 650
-                    width: 50
-                    height: 30
-                    font.pixelSize: 12
-                    color: "black"
-                }
             }
         }
+
         Tab {
             id: search
             title: "Поиск изображений"
+
             Background {
                 id: form_search
+
                 Rectangle {
                     id: search_button
                     width: parent.width
                     height: 37
                     color: "#00000000"
+
                     TextField {
                         id: textField_search
                         anchors.left: parent.left
@@ -336,6 +364,7 @@ ApplicationWindow
                         height: 27
                         placeholderText: qsTr("Введите необходимые тэги для поиска")
                     }
+
                     Button {
                         id: button_search
                         anchors.left: textField_search.right
@@ -347,6 +376,7 @@ ApplicationWindow
                         text: qsTr("Поиск")
                     }
                 }
+
                 /*GridView {
                     id: gridView1
                     anchors.top: search_button.bottom
@@ -394,8 +424,10 @@ ApplicationWindow
             }
         }
     }
+
     DialogRect {
         id: item_term
+
         Button {
             id: button_ok
             width: 92
@@ -408,9 +440,9 @@ ApplicationWindow
                 //myModel.insertTerm(textField_term.text)
                 myModel.insertUnit(textField_term.text,1)
                 item_term.visible=false
-                //reset
             }
         }
+
         TextField {
             id: textField_term
             width: 305
@@ -423,6 +455,7 @@ ApplicationWindow
             placeholderText: qsTr("Введите номер семестра")
         }
     }
+
     DialogRect {
         id: item_subject
         TextField {
@@ -436,6 +469,7 @@ ApplicationWindow
             anchors.horizontalCenter: parent.horizontalCenter
             placeholderText: qsTr("Введите название предмета")
         }
+
         Button {
             id: button_ok1
             anchors.bottom: parent.bottom
@@ -451,8 +485,10 @@ ApplicationWindow
             }
         }
     }
+
     DialogRect {
         id: item_theme
+
         TextField {
             id: textField_theme
             width: 305
@@ -464,6 +500,7 @@ ApplicationWindow
             anchors.horizontalCenter: parent.horizontalCenter
             placeholderText: qsTr("Введите название темы")
         }
+
         Button {
             id: button_ok2
             anchors.bottom: parent.bottom
@@ -478,6 +515,7 @@ ApplicationWindow
             }
         }
     }
+
     Rectangle {
         id: item_image
         anchors.verticalCenter: parent.verticalCenter
@@ -498,6 +536,7 @@ ApplicationWindow
             iconSource: "image_button/close.png"
             onClicked: item_image.visible = false
         }
+
         Button {
             id: button_ok3
             anchors.bottom: parent.bottom
@@ -508,6 +547,7 @@ ApplicationWindow
             text: qsTr("ОК")
             onClicked: myModel.insertImage(textField_path.text,textField_image_comment.text,textField_image_tags.text)
         }
+
         TextField {
                id: textField_path
                width: 305
@@ -516,12 +556,14 @@ ApplicationWindow
                anchors.top: button_close3.bottom
                anchors.topMargin: 15
                placeholderText: qsTr("Путь к изображению")
+
                MouseArea {
                    anchors.fill: parent
                    id: mouseArea_path
                    onDoubleClicked: fileDialog.visible = true
                }
         }
+
         FileDialog {
             id: fileDialog
             title: "Выбор изображения"
@@ -531,6 +573,7 @@ ApplicationWindow
             selectedNameFilter: "Изображения (*.jpg *.png *.bmp *gif)"
             onAccepted: textField_path.text = myModel.cutPath(fileDialog.fileUrl.toString())
         }
+
         TextField {
             id: textField_image_comment
             width: 305
@@ -541,6 +584,7 @@ ApplicationWindow
             anchors.horizontalCenter: parent.horizontalCenter
             placeholderText: qsTr("Введите комментарий")
         }
+
         TextField {
             id: textField_image_tags
             width: 305
@@ -551,6 +595,7 @@ ApplicationWindow
             placeholderText: qsTr("Введите тэги")
         }
     }
+
     Rectangle {
         id: item_print
         width: 400
@@ -560,6 +605,7 @@ ApplicationWindow
         visible: false
         color: "#55aaff"
         border.width: 1
+
         Button {
             id: button_close4
             anchors.right: parent.right
@@ -571,6 +617,7 @@ ApplicationWindow
             iconSource: "image_button/close.png"
             onClicked: item_print.visible = false
         }
+
         TextField {
                id: textField_print
                width: 330

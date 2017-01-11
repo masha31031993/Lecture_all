@@ -7,6 +7,7 @@
 #include <QtPrintSupport/QPrintPreviewDialog>
 #include <QPainter>
 #include "algorithm"
+#include <QFile>
 
 LectureModel::LectureModel(QString dbPath, QObject *parent)
     : QAbstractItemModel(parent)
@@ -575,21 +576,17 @@ void LectureModel::removeUnit()
 
 QString LectureModel::grayColor(QString url) {
     QImage image;
-    bool ok = image.load(url);
-    if (ok == false)
-        qDebug()<<"Изображение не считалось";
+    image.load(url);
     if(!image.isNull()) {
         QImage image_gray = image;
         image_gray = image_gray.convertToFormat(QImage::Format_Grayscale8);
-
         QString path_gray = path(url,"_gray");
-        /*int pos_gray = path_gray.lastIndexOf('.');
-        path_gray= path_gray.mid(0,path_gray.lastIndexOf('.'))+"_gray"+path_gray.mid(pos_gray);*/
-        bool ok_gray = image_gray.save(path_gray);
-        if (ok_gray == false)
-            qDebug()<<"Изображение не сохранилось";
+        bool ok = image_gray.save(path_gray);
+        if (ok == false)
+            qDebug()<<"Изображение после преобразования в серые тона не сохранилось";
         return path_gray;
     }
+    else qDebug()<<"Изображение не считалось";
 }
 
 QString LectureModel::cutPath(QUrl/*QString*/ url) {
@@ -599,13 +596,10 @@ QString LectureModel::cutPath(QUrl/*QString*/ url) {
     return url.toLocalFile();
 }
 
-QString LectureModel::gauss(QString url)
-{
+QString LectureModel::gauss(QString url) {
     QImage image;
     int k = 15;
-    bool ok = image.load(url);
-    if (ok == false)
-        qDebug()<<"Изображение не считалось";
+    image.load(url);
     if(!image.isNull()) {
         int h = image.height();
         int w = image.width();
@@ -646,11 +640,12 @@ QString LectureModel::gauss(QString url)
         }
         QString path_gauss = path(url,"-");
         path_gauss = path(path_gauss,"_gauss");
-        bool ok_gauss = image.save(path_gauss);
-        if (ok_gauss == false)
-        qDebug()<<"Изображение не сохранилось";
+        bool ok = image.save(path_gauss);
+        if (ok == false)
+            qDebug()<<"Изображение после размытия по Гауссу не сохранилось";
         return path_gauss;
     }
+    else qDebug()<<"Изображение не считалось";
 }
 
 void LectureModel::printImage(QUrl url)
@@ -699,16 +694,11 @@ QString LectureModel::path(QString p, QString str)
     }
 }
 
-QString LectureModel::division(QString url, QString path_gauss)
-{
+QString LectureModel::division(QString path_gray, QString path_gauss) {
     QImage image_gray, image_gauss, image;
-    image.load(url);
-    bool ok_gray = image_gray.load(url);
-    if (ok_gray == false)
-        qDebug()<<"Изображение в серых тонах не считалось";
-    bool ok_gauss= image_gauss.load(path_gauss);
-    if (ok_gauss == false)
-        qDebug()<<"Изображение в серых тонах не считалось";
+    image.load(path_gray);
+    image_gray.load(path_gray);
+    image_gauss.load(path_gauss);
     if(!image_gray.isNull() || !image_gauss.isNull()) {
         int h = image_gray.height();
         int w = image_gray.width();
@@ -740,12 +730,18 @@ QString LectureModel::division(QString url, QString path_gauss)
                 QColor p_new(red,green,blue);
                 image.setPixelColor(i,j,p_new);
             }
-       QString path_image = path(url,"-");
+       QString path_image = path(path_gray,"-");
        path_image = path(path_image,"_d");
         bool ok = image.save(path_image);
         if (ok == false)
-        qDebug()<<"Изображение не сохранилось";
+        qDebug()<<"Изображение после деления не сохранилось";
         return path_image;
+    }
+    else {
+        if (image_gray.isNull())
+            qDebug()<<"Изображение в серых тонах не считалось";
+        if (image_gauss.isNull())
+            qDebug()<<"Изображение размытия Гаусса не считалось";
     }
 }
 
@@ -756,15 +752,10 @@ QVariant LectureModel::cut(int x, int y, int last_x, int last_y, QUrl url)
     if (ok_open == false)
         qDebug()<<"Изображение не считалось";
     image = image.copy(x,y,last_x-x,last_y-y);
-    //QString path_image = url.toLocalFile();
-    QString path_image = path(url.toLocalFile(),"_cut");
-    //QString path_image = url.toString();
-    //path_image = path_image.mid(5);
-    bool ok_save = image.save(path_image);
+    bool ok_save = image.save(url.toLocalFile());
      if (ok_save == false)
          qDebug()<<"Изображение не сохранилось";
-     //emit dataChanged(indexOfImage,indexOfImage);
-     return QUrl::fromLocalFile(path_image);
+     return QUrl::fromLocalFile(url.toLocalFile());
 }
 
 /*QVariant LectureModel::paintRect(int x, int y, int n_x, int n_y, QUrl url)
@@ -800,8 +791,7 @@ void LectureModel::setIndexOpenImage(const QModelIndex &index)
     indexOfImage = index;
 }
 
-QUrl LectureModel::improveImage(QUrl url)
-{
+QUrl LectureModel::improveImage(QUrl url) {
     QImage image;
     QString path_gray, path_gauss, path_d, path_image;
     path_gray = grayColor(url.toLocalFile());
@@ -813,7 +803,20 @@ QUrl LectureModel::improveImage(QUrl url)
     path_image = path(path_d,"-");
     bool ok_save = image.save(path_image);
     if (ok_save == false)
-        qDebug()<<"Изображение не сохранилось";
+        qDebug()<<"Улучшенное изображение не сохранилось";
+    QFile file_gray(path_gray);
+    bool ok_remove = false;
+    ok_remove = file_gray.remove(path_gray);
+    if (ok_remove == false)
+        qDebug()<<"Файл"<<path_gray<<"не удалился";
+    QFile file_gauss(path_gauss);
+    ok_remove = file_gauss.remove(path_gauss);
+    if (ok_remove == false)
+        qDebug()<<"Файл"<<path_gauss<<"не удалился";
+    QFile file_d(path_d);
+    ok_remove = file_d.remove(path_d);
+    if (ok_remove == false)
+        qDebug()<<"Файл"<<path_d<<"не удалился";
     return QUrl::fromLocalFile(path_image);
 }
 
