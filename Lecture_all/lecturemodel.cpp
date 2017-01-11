@@ -745,17 +745,22 @@ QString LectureModel::division(QString path_gray, QString path_gauss) {
     }
 }
 
-QVariant LectureModel::cut(int x, int y, int last_x, int last_y, QUrl url)
+QUrl LectureModel::cut(int x, int y, int last_x, int last_y, QUrl url)
 {
     QImage image;
     bool ok_open = image.load(url.toLocalFile());
     if (ok_open == false)
         qDebug()<<"Изображение не считалось";
     image = image.copy(x,y,last_x-x,last_y-y);
-    bool ok_save = image.save(url.toLocalFile());
+    QString path_image = url.toLocalFile();
+    QFile file(path_image);
+    bool ok_remove = file.remove(path_image);
+    if (ok_remove == false)
+        qDebug()<<"Файл"<<path_image<<"не удалился";
+    bool ok_save = image.save(path_image);
      if (ok_save == false)
          qDebug()<<"Изображение не сохранилось";
-     return QUrl::fromLocalFile(url.toLocalFile());
+     return QUrl::fromLocalFile(path_image);
 }
 
 /*QVariant LectureModel::paintRect(int x, int y, int n_x, int n_y, QUrl url)
@@ -772,7 +777,7 @@ QVariant LectureModel::cut(int x, int y, int last_x, int last_y, QUrl url)
     return QUrl::fromLocalFile(path_image);
 }*/
 
-QVariant LectureModel::save(QUrl url, qreal scaleFactor)
+QUrl LectureModel::save(QUrl url, qreal scaleFactor)
 {
     QPixmap image;
     image.load(url.toLocalFile());

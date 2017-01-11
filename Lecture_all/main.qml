@@ -185,8 +185,9 @@ ApplicationWindow {
                         enabled: false
                         onClicked: {
                             image.source = myModel.improveImage(image.source)
+                            image.cache = true
+                            sourceChanged(image.source)
                             image.cache = false
-                            image.sourceChanged()
                         }
                     }
 
@@ -214,11 +215,12 @@ ApplicationWindow {
                         text: "Обрезать"
                         property bool click: false
                         onClicked: {
+                            image.source = myModel.cut(canvas.firstX,canvas.firstY,canvas.lastX,canvas.lastY,image.source)
+                            image.cache = true
+                            sourceChanged(image.source)
+                            image.cache = false
                             click = true
                             canvas.requestPaint()
-                            image.source = myModel.cut(canvas.firstX,canvas.firstY,canvas.lastX,canvas.lastY,image.source)
-                            image.cache = false
-                            image.sourceChanged()
                             button_save.enabled = true
                             button_turn.enabled = true
                         }
@@ -232,7 +234,8 @@ ApplicationWindow {
                         height: 27
                         iconSource: "image_button/right.png"
                         enabled: false
-                        onClicked: slider_rotation.visible = true
+                        onClicked:
+                            slider_rotation.visible = true
                     }
 
                     Slider {
@@ -243,7 +246,8 @@ ApplicationWindow {
                         height: 27
                         stepSize: 0.001
                         visible: false
-                        onEnabledChanged: image.rotation = slider_rotation.value
+                        onEnabledChanged:
+                            image.rotation = slider_rotation.value
                     }
 
                     Slider {
@@ -274,8 +278,8 @@ ApplicationWindow {
                             id: image
                             rotation: slider_rotation.value*360
                             scale: slider_image.value
-                            mipmap: true
                             fillMode: Image.PreserveAspectFit
+                            cache: false
 
                             Canvas {
                                 id: canvas

@@ -81,9 +81,9 @@ public:
     QString /*void*/ gauss(QString url);
     QString path(QString p,QString str);
     QString division(QString path_gray, QString path_gauss);
-    Q_INVOKABLE QVariant cut(int x, int y, int n_x, int n_y, QUrl url);
+    Q_INVOKABLE QUrl cut(int x, int y, int n_x, int n_y, QUrl url);
     //Q_INVOKABLE QVariant paintRect(int x, int y, int n_x, int n_y, QUrl url);
-    Q_INVOKABLE QVariant save(QUrl url, qreal scaleFactor);
+    Q_INVOKABLE QUrl save(QUrl url, qreal scaleFactor);
     Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
     Q_INVOKABLE QUrl improveImage(QUrl url);
 
