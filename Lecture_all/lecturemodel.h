@@ -5,7 +5,13 @@
 #include <databasehandler.h>
 #include <QModelIndex>
 #include <QVariant>
-
+#include <QImage>
+#include <QColor>
+#include <QPixmap>
+#include <QtPrintSupport/QPrinter>
+#include <QtPrintSupport/QPrintDialog>
+#include <QtPrintSupport/QPrintPreviewDialog>
+#include <QPainter>
 
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
 
@@ -75,9 +81,12 @@ public:
 
     Q_INVOKABLE void removeUnit();
 
-
-    Q_INVOKABLE QVariant grayColor(QString path);
-    Q_INVOKABLE QString cutPath(QString url);
+    Q_INVOKABLE /*QVariant*/ void grayColor(QUrl path);
+    Q_INVOKABLE void printImage(QUrl url);
+    Q_INVOKABLE QString cutPath(QUrl url);
+    Q_INVOKABLE /*QVariant*/ void gauss(QUrl url);
+    QString path(QString p,QString str);
+    Q_INVOKABLE QVariant division(QUrl url);
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);

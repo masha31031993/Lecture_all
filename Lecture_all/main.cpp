@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     /*DataBaseHandler* testhand = new DataBaseHandler("../LecturesDB");
-    testhand->printPictures_info();
-    qDebug() << testhand->getRowCountOfChild(1);
-    */
+    //testhand->printPictures_info();
+    testhand->deleteAllChilds(16);*/
+
 
     /*QApplication a(argc, argv);
 
@@ -40,8 +40,4 @@ int main(int argc, char *argv[])
     //engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     component.create();
     return app.exec();
-
-
-
-
 }

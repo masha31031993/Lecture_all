@@ -35,6 +35,13 @@ public:
     void        deleteFromSubjects_and_themes(int idSubj);
     void        deleteFromPictures_info(int idImage);
 
+    //удаление "детей" по Id_parent
+    void        deleteChildsInSubj_and_themes(int parentId);
+    void        deleteChildsInPicture_info(int parentId);
+
+    //удаление всех "детей" по Id_parent
+    void        deleteAllChilds(int parentId);
+
     //обновление данных в таблицах
     void        updateParAndNumSubjects_and_themes(int idSubj, int newIdParent, int newNumber);
     bool        updateTerm(int idSubj, int newTerm);
