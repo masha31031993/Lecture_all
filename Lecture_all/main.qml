@@ -194,10 +194,13 @@ ApplicationWindow
                         width: 92
                         height: 27
                         text: "Обрезать"
+                        property bool click: false
                         onClicked: {
                             image.source = myModel.cut(canvas.firstX,canvas.firstY,canvas.lastX,canvas.lastY,image.source)
                             button_save.enabled = true
                             button_turn.enabled = true
+                            click = true
+                            canvas.requestPaint()
                         }
                     }
                     Button {
@@ -256,11 +259,15 @@ ApplicationWindow
                                 property int lastY: 0
                                 onPaint: {
                                     var ctx = getContext("2d")
-                                    ctx.lineWidth = 1
-                                    ctx.clearRect(0,0,canvas.width,canvas.height)
-                                    ctx.beginPath()
-                                    ctx.rect(firstX,firstY,lastX - firstX,lastY - firstY)
-                                    ctx.stroke()
+                                    if (button_cut.click == true)
+                                        ctx.clearRect(0,0,canvas.width,canvas.height)
+                                    else {
+                                        ctx.lineWidth = 1
+                                        ctx.clearRect(0,0,canvas.width,canvas.height)
+                                        ctx.beginPath()
+                                        ctx.rect(firstX,firstY,lastX - firstX,lastY - firstY)
+                                        ctx.stroke()
+                                    }
                                 }
                             }
                             MouseArea {
@@ -268,6 +275,7 @@ ApplicationWindow
                                 id: mouseArea_image
                                 hoverEnabled: false
                                 onPressed: {
+                                    button_cut.click = false
                                     button_cut.enabled = true
                                     canvas.firstX = mouseX
                                     canvas.firstY = mouseY
