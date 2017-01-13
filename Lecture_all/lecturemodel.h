@@ -5,6 +5,16 @@
 #include <databasehandler.h>
 #include <QModelIndex>
 #include <QVariant>
+#include <QImage>
+#include <QColor>
+#include <QPixmap>
+#include <QtPrintSupport/QPrinter>
+#include <QtPrintSupport/QPrintDialog>
+#include <QtPrintSupport/QPrintPreviewDialog>
+#include <QPainter>
+#include "algorithm"
+#include <QFile>
+#include <QtMath>
 
 
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
@@ -83,9 +93,9 @@ public:
     QString division(QString path_gray, QString path_gauss);
     Q_INVOKABLE QUrl cut(int x, int y, int n_x, int n_y, QUrl url);
     //Q_INVOKABLE QVariant paintRect(int x, int y, int n_x, int n_y, QUrl url);
-    Q_INVOKABLE QUrl save(QUrl url, qreal scaleFactor);
-    Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
+    Q_INVOKABLE QUrl save(QUrl url, qreal scaleFactor, qreal angle);
     Q_INVOKABLE QUrl improveImage(QUrl url);
+    Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);

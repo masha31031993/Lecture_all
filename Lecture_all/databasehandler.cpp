@@ -1,5 +1,5 @@
 #include "databasehandler.h"
-#include <QDebug>
+
 
 DataBaseHandler::DataBaseHandler(QString name)
 {
@@ -265,7 +265,7 @@ int DataBaseHandler::getTermSerialNumber(int term)
     QString strQuery;
     strQuery = strSearch.arg(term);
 
-    int serialNimber = -2;
+    int serialNimber = 0;
     QSqlQuery query;
     if(query.exec(strQuery))
     {
@@ -476,4 +476,114 @@ bool DataBaseHandler::updateCommentP_I(int idImage, QString newComment)
         return false;
     }
     return true;
+}
+
+void DataBaseHandler::deleteChildsInSubj_and_themes(int parentId)
+{
+    QString strDelete = "DELETE FROM subjects_and_themes WHERE (Id_parent = %1);";
+    QString strQuery = strDelete.arg(QString::number(parentId));
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу удалить элементы из subjects_and_themes с Id_parent\n";
+    }
+}
+
+void DataBaseHandler::deleteChildsInPicture_info(int parentId)
+{
+    QString strDelete = "SELECT Image_path FROM pictures_info WHERE (Id_parent = %1);";
+    QString strQuery = strDelete.arg(QString::number(parentId));
+    QSqlQuery query;
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу взять путь из Pictures_info\n";
+    }
+    QString path;
+    while(query.next())
+    {
+        path = query.value(0).toString();
+        //QFile file((dw->data)->name);
+        //file.remove();
+        QFile::remove(path);
+    }
+
+    strDelete = "DELETE FROM pictures_info WHERE (Id_parent = %1);";
+    strQuery = strDelete.arg(QString::number(parentId));
+
+    if(!query.exec(strQuery))
+    {
+        qDebug() << "Не могу удалить строку из Pictures_info\n";
+    }
+}
+
+void DataBaseHandler::deleteAllChilds(int parentId)
+{
+    QString strChildsLvL1 = "SELECT Type FROM subjects_and_themes WHERE (Id_subj = %1)";
+    strChildsLvL1 = strChildsLvL1.arg(QString::number(parentId));
+    QSqlQuery queryLvL1, queryLvL2, queryLvL3;
+    QString strChildsLvL2, strChildsLvL3;
+    int type;
+    if(!queryLvL1.exec(strChildsLvL1))
+    {
+        qDebug() << "deleteAllChilds 1\n";
+        return;
+    }
+    //LvL1
+    if(queryLvL1.next())
+    {
+        type = queryLvL1.value(0).toInt();
+        //LvL2
+        if(type < 3)
+        {
+            strChildsLvL2 = "SELECT Id_subj FROM subjects_and_themes WHERE (Id_parent == %1);";
+            strChildsLvL2 = strChildsLvL2.arg(QString::number(parentId));
+            if(!queryLvL2.exec(strChildsLvL2))
+            {
+                qDebug() << "deleteAllChilds 2\n";
+                return;
+            }
+            int idLvL2, idLvL3;
+            int countLvL3, count;
+            while(queryLvL2.next())
+            {
+
+                idLvL2 = queryLvL2.value(0).toInt();
+                count = getRowCountOfChild(idLvL2,(type + 1));
+                //LvL3
+                if(count > 0)
+                {
+                    if((type + 1) < 3)
+                    {
+                        strChildsLvL3 = "SELECT Id_subj FROM subjects_and_themes WHERE (Id_parent == %1);";
+                        strChildsLvL3 = strChildsLvL3.arg(QString::number(idLvL2));
+                        if(!queryLvL3.exec(strChildsLvL3))
+                        {
+                            qDebug() << "deleteAllChilds 3\n";
+                            return;
+                        }
+                        while(queryLvL3.next())
+                        {
+                            idLvL3 = queryLvL3.value(0).toInt();
+                            countLvL3 = getRowCountOfChild(idLvL3,3);
+                            //LvL4
+                            if(countLvL3 > 0)
+                            {
+                                deleteChildsInPicture_info(idLvL3);
+                            }
+                        }
+                        deleteChildsInSubj_and_themes(idLvL2);
+                    }
+                    else
+                    {
+                        deleteChildsInPicture_info(idLvL2);
+                    }
+                }
+            }
+            deleteChildsInSubj_and_themes(parentId);
+        }
+        else
+        {
+            deleteChildsInPicture_info(parentId);
+        }
+    }
 }

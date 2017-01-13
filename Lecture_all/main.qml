@@ -10,9 +10,12 @@ ApplicationWindow {
     visible: true
     x: Screen.width/2 - applicationWindow.width/2
     y: Screen.height/2 - applicationWindow.height/2
-    width: 830
+    width: 850
     height: 700
     title: qsTr("Лекции")
+
+    property bool click: false
+
     menuBar: MenuBar {
         style: MenuBarStyle {
             background: Rectangle {
@@ -147,6 +150,7 @@ ApplicationWindow {
                                         image.source = myModel.data(index_1,1)
                                         myModel.setIndexOpenImage(index_1)
                                         button_improve.enabled = true
+                                        button_turn.enabled = true
                                         slider_image.visible = true
                                     }
                                 }
@@ -167,12 +171,12 @@ ApplicationWindow {
                     }
                 }
 
-                Rectangle {
+                Item {
                     id: r_button
                     anchors.left: treeView.right
                     width: form_image_one.width*2/3   //ширина
                     height: 30
-                    color: "#00000000" // прозрачность
+                    //color: "#00000000" // прозрачность
 
                     Button {
                         id: button_improve
@@ -185,6 +189,8 @@ ApplicationWindow {
                         enabled: false
                         onClicked: {
                             image.source = myModel.improveImage(image.source)
+                            slider_rotation.value = 0
+                            slider_image.value = 1
                             image.cache = true
                             sourceChanged(image.source)
                             image.cache = false
@@ -201,7 +207,16 @@ ApplicationWindow {
                         text: "Сохранить"
                         enabled: false
                         onClicked: {
-                            image.source = myModel.save(image.source, image.scale)
+                            image.source = myModel.save(image.source, image.scale, image.rotation)
+                            slider_rotation.value = 0
+                            slider_image.value = 1
+                            image.cache = true
+                            sourceChanged(image.source)
+                            image.cache = false
+                            slider_rotation.visible = false
+                            button_save.enabled = false
+                            button_improve.enabled = true
+                            mouseArea_image.enabled = true
                         }
                     }
 
@@ -213,16 +228,16 @@ ApplicationWindow {
                         width: 92
                         height: 27
                         text: "Обрезать"
-                        property bool click: false
                         onClicked: {
                             image.source = myModel.cut(canvas.firstX,canvas.firstY,canvas.lastX,canvas.lastY,image.source)
+                            slider_rotation.value = 0
+                            slider_image.value = 1
                             image.cache = true
                             sourceChanged(image.source)
                             image.cache = false
-                            click = true
+                            applicationWindow.click = true
                             canvas.requestPaint()
-                            button_save.enabled = true
-                            button_turn.enabled = true
+                            button_cut.enabled = false
                         }
                     }
 
@@ -234,8 +249,15 @@ ApplicationWindow {
                         height: 27
                         iconSource: "image_button/right.png"
                         enabled: false
-                        onClicked:
+                        onClicked: {
+                            button_save.enabled = true
+                            applicationWindow.click = true
+                            canvas.requestPaint()
                             slider_rotation.visible = true
+                            button_improve.enabled = false
+                            mouseArea_image.enabled = false
+                            button_cut.enabled = false
+                        }
                     }
 
                     Slider {
@@ -246,8 +268,6 @@ ApplicationWindow {
                         height: 27
                         stepSize: 0.001
                         visible: false
-                        onEnabledChanged:
-                            image.rotation = slider_rotation.value
                     }
 
                     Slider {
@@ -256,19 +276,37 @@ ApplicationWindow {
                         height: 27
                         anchors.left: slider_rotation.right
                         anchors.leftMargin: 3
-                        maximumValue: 1
-                        minimumValue: 0.4
+                        maximumValue: 1.7
+                        minimumValue: 0.3
+                        value: 1
                         visible: false
                     }
                 }
 
-                Rectangle {
+                Item {
                     id: r_image
                     anchors.top: r_button.bottom
                     anchors.left: treeView.right
                     width: form_image_one.width*2/3
                     height: form_image_one.height-30
-                    color: "#00000000"
+                    //color: "#00000000"
+
+                    /*Flickable {
+                        id: flick
+                        anchors.fill: r_image
+                        contentHeight: contentItem.childrenRect.height
+                        contentWidth: contentItem.childrenRect.width
+                        interactive: false
+                        ScrollBar.vertical: ScrollBar {
+                            active: true
+                            id:vert
+                            orientation: Qt.Vertical
+                        }
+                        ScrollBar.horizontal: ScrollBar {
+                            active: true
+                            id:horiz
+                            orientation: Qt.Horizontal
+                        }*/
 
                     ScrollView {
                         id: scrollView
@@ -290,7 +328,7 @@ ApplicationWindow {
                                 property int lastY: 0
                                 onPaint: {
                                     var ctx = getContext("2d")
-                                    if (button_cut.click == true)
+                                    if (button_cut.click === true)
                                         ctx.clearRect(0,0,canvas.width,canvas.height)
                                     else {
                                         ctx.lineWidth = 2
@@ -305,10 +343,8 @@ ApplicationWindow {
                             MouseArea {
                                 anchors.fill: parent // действуем в пределах всего элемента Image
                                 id: mouseArea_image
-                                hoverEnabled: false
                                 onPressed: {
-                                    button_cut.click = false
-                                    button_cut.enabled = true
+                                    applicationWindow.click = false
                                     canvas.firstX = mouseX
                                     canvas.firstY = mouseY
                                 }
@@ -318,23 +354,26 @@ ApplicationWindow {
                                     canvas.requestPaint()
                                 }
                                 onReleased: {
+                                    button_cut.enabled = true
                                     canvas.lastX = (mouseX > image.paintedWidth) ? image.paintedWidth : mouseX
                                     canvas.lastY = (mouseY > image.paintedHeight) ? image.paintedHeight : mouseY
-                                    canvas.lastX = (canvas.lastX < canvas.firstX) ? 0 : canvas.lastX
-                                    canvas.lastY = (canvas.lastY < canvas.firstY) ? 0 : canvas.lastY
-                                    if (canvas.lastX - canvas.firstX < 0) {
+                                    canvas.lastX = (canvas.lastX < 0) ? 0 : canvas.lastX
+                                    canvas.lastY = (canvas.lastY < 0) ? 0 : canvas.lastY
+                                    if (canvas.lastX < canvas.firstX) {
+                                        var pos = canvas.lastX
                                         canvas.lastX = canvas.firstX
-                                        canvas.firstX = 0
+                                        canvas.firstX = pos
                                     }
-                                    if (canvas.lastY - canvas.firstY < 0) {
+                                    if (canvas.lastY < canvas.firstY) {
+                                        var pos = canvas.lastY
                                         canvas.lastY = canvas.firstY
-                                        canvas.firstY = 0
+                                        canvas.firstY = pos
                                     }
                                     canvas.requestPaint()
                                 }
                                 onClicked: {
                                     if (mouse.button === Qt.RightButton) {
-                                        button_cut.click = true
+                                        applicationWindow.click = true
                                         canvas.requestPaint()
                                     }
                                 }
@@ -444,6 +483,7 @@ ApplicationWindow {
                 //myModel.insertTerm(textField_term.text)
                 myModel.insertUnit(textField_term.text,1)
                 item_term.visible=false
+                textField_term.text = ""
             }
         }
 
@@ -486,6 +526,7 @@ ApplicationWindow {
                 //myModel.insertSubject(textField_subject.text, treeView.currentIndex);
                 myModel.insertUnit(textField_subject.text,2)
                 item_subject.visible = false
+                textField_subject.text = ""
             }
         }
     }
@@ -516,6 +557,7 @@ ApplicationWindow {
             onClicked: {
                 myModel.insertUnit(textField_theme.text,3)
                 item_theme.visible = false
+                textField_theme.text = ""
             }
         }
     }
@@ -549,7 +591,13 @@ ApplicationWindow {
             width: 92
             height: 27
             text: qsTr("ОК")
-            onClicked: myModel.insertImage(textField_path.text,textField_image_comment.text,textField_image_tags.text)
+            onClicked: {
+                myModel.insertImage(textField_path.text,textField_image_comment.text,textField_image_tags.text)
+                item_image.visible = false
+                textField_path.text = ""
+                textField_image_comment.text = ""
+                textField_image_tags.text = ""
+            }
         }
 
         TextField {

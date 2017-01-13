@@ -1,13 +1,5 @@
 #include "lecturemodel.h"
-#include <QImage>
-#include <QColor>
-#include <QPixmap>
-#include <QtPrintSupport/QPrinter>
-#include <QtPrintSupport/QPrintDialog>
-#include <QtPrintSupport/QPrintPreviewDialog>
-#include <QPainter>
-#include "algorithm"
-#include <QFile>
+
 
 LectureModel::LectureModel(QString dbPath, QObject *parent)
     : QAbstractItemModel(parent)
@@ -47,6 +39,7 @@ LectureModel::LectureModel(QString dbPath, QObject *parent)
                 dw->parent = root;
                 dw->count = dataBase->getRowCountOfChild(dw->id, dw->type);
                 root->children.append(dw);
+                root->count++;
             }
         }
     }
@@ -304,7 +297,7 @@ bool LectureModel::setData(const QModelIndex &index, const QVariant &value, int 
     case INSERT_ID_ROLE:
         id = value.toInt();
         dw->id = id;
-        dw->number = index.row();
+        //dw->number = index.row();
         dw->count = 0;
         resultOfUpdate = dataBase->updateId(-1,id,dw->type);
         break;
@@ -329,6 +322,7 @@ bool LectureModel::setData(const QModelIndex &index, const QVariant &value, int 
 
 bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //вставка пустых строк
 {
+    int lastNum = row + count - 1;
     DataWrapper* parentItem;
     if (!parent.isValid())
     {
@@ -338,7 +332,7 @@ bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //�
     {
         parentItem = static_cast<DataWrapper*>(parent.internalPointer());
     }
-    beginInsertRows(parent, row, row + count - 1);
+    beginInsertRows(parent, row, lastNum);
     DataWrapper* dw;
     IData* data;
     int newType = parentItem->type + 1;
@@ -348,6 +342,17 @@ bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //�
         dw->data = data;
         dw->parent = parentItem;
         dw->type = static_cast<h_type>(newType);
+        dw->number = lastNum - i;
+        dw->count = 0;
+        if(newType == 1)
+        {
+            foreach (DataWrapper* child, parentItem->children) {
+                if(child->number >= row)
+                {
+                    child->number++;
+                }
+            }
+        }
         parentItem->children.insert(row,dw);
         parentItem->count = parentItem->count + 1;
         if(newType < 4)
@@ -397,10 +402,6 @@ void LectureModel::insertUnit(QString unitName, int type)
             qDebug() << "Семестр не подходит";
             return;
         }
-        /*if(!selectedIndex.isValid())
-        {
-             selectedIndex = this->index(0,0,selectedIndex);
-        }*/
         serialNumber = dataBase->getTermSerialNumber(term);
         selectedIndex = QModelIndex();
         dataBase->changeTermSerialNumber(term);
@@ -409,6 +410,10 @@ void LectureModel::insertUnit(QString unitName, int type)
     {
         DataWrapper* parentItem = static_cast<DataWrapper*>(selectedIndex.internalPointer());
         serialNumber = parentItem->count;
+        if((serialNumber > 0) && ((parentItem->children).size() == 0))
+        {
+            fetchMore(selectedIndex);
+        }
         term = 0;
     }
     int newId = dataBase->getFreeIdInS_T();
@@ -437,6 +442,10 @@ void LectureModel::insertImage(QString path, QString comment, QString tags)
             selectedItem = static_cast<DataWrapper*>(selectedIndex.internalPointer());
         }
         int serialNumber = selectedItem->count;
+        if((serialNumber > 0) && ((selectedItem->children).size() == 0))
+        {
+            fetchMore(selectedIndex);
+        }
         int newId = dataBase->getFreeIdPic_Inf();
         insertRows(serialNumber,1,selectedIndex);
         QModelIndex updateIndex = this->index(serialNumber,0,selectedIndex);
@@ -508,6 +517,7 @@ bool LectureModel::removeRows(int row, int count, const QModelIndex &parent)
         }
         else
         {
+            QFile::remove((dw->data)->name);
             dataBase->deleteFromPictures_info(dw->id);
         }
         parentItem->children.removeAt(row);
@@ -542,37 +552,48 @@ void LectureModel::removeUnit()
     QModelIndex indexLevel1, indexLevel2;
     if(item->count > 0)
     {
-        foreach (DataWrapper* dwLevel1, item->children) {
-            if(dwLevel1->count > 0)
+        if((item->children).size() > 0)
+        {
+            foreach (DataWrapper* dwLevel1, item->children)
             {
-                indexLevel1 = index(dwLevel1->number,0,selectedIndex);
-                foreach (DataWrapper* dwLevel2, dwLevel1->children) {
-                    if(dwLevel2->count > 0)
+                if(dwLevel1->count > 0)
+                {
+                    if((dwLevel1->children).size() > 0)
                     {
-                        indexLevel2 = index(dwLevel2->number,0,indexLevel1);
-                        removeRows(0,dwLevel2->count,indexLevel2);
+                        indexLevel1 = index(dwLevel1->number,0,selectedIndex);
+                        foreach (DataWrapper* dwLevel2, dwLevel1->children) {
+                            if(dwLevel2->count > 0)
+                            {
+                                if((dwLevel2->children).size() > 0)
+                                {
+                                    indexLevel2 = index(dwLevel2->number,0,indexLevel1);
+                                    removeRows(0,dwLevel2->count,indexLevel2);
+                                }
+                                else
+                                {
+                                    dataBase->deleteChildsInPicture_info(dwLevel2->id);
+                                }
+                            }
+                        }
+                        removeRows(0, dwLevel1->count,indexLevel1);
+                    }
+                    else
+                    {
+                        dataBase->deleteAllChilds(dwLevel1->id);
                     }
                 }
-                removeRows(0, dwLevel1->count,indexLevel1);
             }
+            removeRows(0,item->count,selectedIndex);
         }
-        removeRows(0,item->count,selectedIndex);
+        else
+        {
+            dataBase->deleteAllChilds(item->id);
+        }
     }
     //*******************************
 
     removeRows(serialNumber,1,parentIndex);
 }
-
-/*void LectureModel:: saveImage(QString str) {
-    QImage img = pimg.toImage();
-    QImageWriter writer(str);
-   // writer.setFileName(str);
-    writer.setFormat("jpeg");
-    writer.write(img);
-    if (writer.canWrite() == false)
-        qDebug() << "Файл не записался";
-}*/
-
 
 QString LectureModel::grayColor(QString url) {
     QImage image;
@@ -753,10 +774,6 @@ QUrl LectureModel::cut(int x, int y, int last_x, int last_y, QUrl url)
         qDebug()<<"Изображение не считалось";
     image = image.copy(x,y,last_x-x,last_y-y);
     QString path_image = url.toLocalFile();
-    QFile file(path_image);
-    bool ok_remove = file.remove(path_image);
-    if (ok_remove == false)
-        qDebug()<<"Файл"<<path_image<<"не удалился";
     bool ok_save = image.save(path_image);
      if (ok_save == false)
          qDebug()<<"Изображение не сохранилось";
@@ -777,18 +794,23 @@ QUrl LectureModel::cut(int x, int y, int last_x, int last_y, QUrl url)
     return QUrl::fromLocalFile(path_image);
 }*/
 
-QUrl LectureModel::save(QUrl url, qreal scaleFactor)
+QUrl LectureModel::save(QUrl url, qreal scaleFactor, qreal angle)
 {
     QPixmap image;
     image.load(url.toLocalFile());
-    image.setDevicePixelRatio(scaleFactor);
-    QSize size_image = image.size()/image.devicePixelRatio();
-    image = image.scaled(size_image);
-    QString path_image = path(url.toLocalFile(),"_scale");
-     bool ok = image.save(path_image);
+
+    //image.setDevicePixelRatio(scaleFactor);
+    //QSize size_image = image.size()/image.devicePixelRatio();
+    //image = image.scaled(size_image);
+
+    QTransform matr;
+    matr = matr.rotate(angle);
+    image = image.transformed(matr,Qt::SmoothTransformation);
+
+    bool ok = image.save(url.toLocalFile());
      if (ok == false)
          qDebug()<<"Изображение не сохранилось";
-     return QUrl::fromLocalFile(path_image);
+    return QUrl::fromLocalFile(url.toLocalFile());
 }
 
 void LectureModel::setIndexOpenImage(const QModelIndex &index)
@@ -814,14 +836,13 @@ QUrl LectureModel::improveImage(QUrl url) {
     ok_remove = file_gray.remove(path_gray);
     if (ok_remove == false)
         qDebug()<<"Файл"<<path_gray<<"не удалился";
-    QFile file_gauss(path_gauss);
-    ok_remove = file_gauss.remove(path_gauss);
-    if (ok_remove == false)
-        qDebug()<<"Файл"<<path_gauss<<"не удалился";
+    //QFile file_gauss(path_gauss);
+    //ok_remove = file_gauss.remove(path_gauss);
+    //if (ok_remove == false)
+    //    qDebug()<<"Файл"<<path_gauss<<"не удалился";
     QFile file_d(path_d);
     ok_remove = file_d.remove(path_d);
     if (ok_remove == false)
         qDebug()<<"Файл"<<path_d<<"не удалился";
     return QUrl::fromLocalFile(path_image);
 }
-
