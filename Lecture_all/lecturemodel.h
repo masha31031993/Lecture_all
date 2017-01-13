@@ -12,6 +12,8 @@
 #include <QtPrintSupport/QPrintDialog>
 #include <QtPrintSupport/QPrintPreviewDialog>
 #include <QPainter>
+#include "algorithm"
+#include <QFile>
 
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
 
@@ -81,12 +83,17 @@ public:
 
     Q_INVOKABLE void removeUnit();
 
-    Q_INVOKABLE /*QVariant*/ void grayColor(QUrl path);
+    QString /*void*/ grayColor(QString path);
     Q_INVOKABLE void printImage(QUrl url);
     Q_INVOKABLE QString cutPath(QUrl url);
-    Q_INVOKABLE /*QVariant*/ void gauss(QUrl url);
+    QString /*void*/ gauss(QString url);
     QString path(QString p,QString str);
-    Q_INVOKABLE QVariant division(QUrl url);
+    QString division(QString path_gray, QString path_gauss);
+    Q_INVOKABLE QUrl cut(int x, int y, int n_x, int n_y, QUrl url);
+    //Q_INVOKABLE QVariant paintRect(int x, int y, int n_x, int n_y, QUrl url);
+    Q_INVOKABLE QUrl save(QUrl url, qreal scaleFactor);
+    Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
+    Q_INVOKABLE QUrl improveImage(QUrl url);
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
@@ -100,6 +107,7 @@ private:
     DataWrapper* root;
     int idForInsert;
     QModelIndex selectedIndex;  // используется как родительский индекс для добавления предмета, темы и картинки
+    QModelIndex indexOfImage;
 
    //static const int INSERT_ID_ROLE = Qt::UserRole + 1;
    //static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;

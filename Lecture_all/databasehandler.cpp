@@ -1,5 +1,5 @@
 #include "databasehandler.h"
-#include <QDebug>
+
 
 DataBaseHandler::DataBaseHandler(QString name)
 {
@@ -265,7 +265,7 @@ int DataBaseHandler::getTermSerialNumber(int term)
     QString strQuery;
     strQuery = strSearch.arg(term);
 
-    int serialNimber = -2;
+    int serialNimber = 0;
     QSqlQuery query;
     if(query.exec(strQuery))
     {

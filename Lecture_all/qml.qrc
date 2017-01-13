@@ -2,10 +2,11 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>MainForm.ui.qml</file>
+        <file>Background.qml</file>
+        <file>DialogRect.qml</file>
     </qresource>
     <qresource prefix="/image_button">
         <file>right.png</file>
         <file>close.png</file>
     </qresource>
 </RCC>
-

@@ -2,7 +2,8 @@
 #define DATABASEHANDLER_H
 
 #include <QtSql>
-
+#include <QFile>
+#include <QDebug>
 
 class DataBaseHandler
 {
