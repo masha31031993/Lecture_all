@@ -23,7 +23,11 @@ enum user_roles{INSERT_ID_ROLE = Qt::UserRole + 1,
                 INSERT_NAME_ROLE,
                 INSERT_TAG_ROLE,
                 INSERT_COMMENT_ROLE,
-                INSERT_TERM_ROLE};
+                INSERT_TERM_ROLE,
+                /*TERM_M,
+                SUBJECT_M,
+                THEME_M,
+                IMAGE_M*/};
 
 struct IData
 {
@@ -48,7 +52,7 @@ class LectureModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit LectureModel(QString dbPath, QObject *parent = 0);
+       explicit LectureModel(QString dbPath, QObject *parent = 0);
     ~LectureModel();
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -86,6 +90,7 @@ public:
     Q_INVOKABLE void removeUnit();
 
     QString /*void*/ grayColor(QString path);
+    Q_INVOKABLE void print();
     Q_INVOKABLE void printImage(QUrl url);
     Q_INVOKABLE QString cutPath(QUrl url);
     QString /*void*/ gauss(QString url);
@@ -97,6 +102,8 @@ public:
     Q_INVOKABLE QUrl improveImage(QUrl url);
     Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
     Q_INVOKABLE bool clearSourceImage();
+    //QHash<int, QByteArray> roleNames() const;
+    Q_INVOKABLE bool typeItem (QModelIndex &index, int type);
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);

@@ -44,6 +44,7 @@ LectureModel::LectureModel(QString dbPath, QObject *parent)
             }
         }
     }
+
 }
 
 LectureModel::~LectureModel()
@@ -145,26 +146,44 @@ int LectureModel::columnCount(const QModelIndex &parent) const
 QVariant LectureModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
-        return QVariant();
+           return QVariant();
 
-    DataWrapper* itemIndex = static_cast<DataWrapper*>(index.internalPointer());
-    if(role == Qt::DisplayRole) {
-        switch (itemIndex->type) {
-        case TERM:
-        case COURSE:
-        case THEME:{
-            return (itemIndex->data->name);
-            break;}
-        default: {
-            int pos;
-            QString path;
-            path = itemIndex->data->name;
-            pos = path.lastIndexOf('/') + 1;
-            return path.mid(pos, path.lastIndexOf('.') - pos);
-            break;
-        }
-        }
-    }
+       DataWrapper* itemIndex = static_cast<DataWrapper*>(index.internalPointer());
+       if(role == Qt::DisplayRole) {
+           switch (itemIndex->type) {
+           case TERM:
+           case COURSE:
+           case THEME:{
+               return (itemIndex->data->name);
+               break;}
+           default: {
+               int pos;
+               QString path;
+               path = itemIndex->data->name;
+               pos = path.lastIndexOf('/') + 1;
+               return path.mid(pos, path.lastIndexOf('.') - pos);
+               break;
+           }
+           }
+       }
+
+//       switch (role)
+//       {
+//       case Qt::DisplayRole:
+//       case TERM_M:
+//       case SUBJECT_M:
+//       case THEME_M:
+//           return (itemIndex->data->name);
+//       default: {
+//           int pos;
+//           QString path;
+//           path = itemIndex->data->name;
+//           pos = path.lastIndexOf('/') + 1;
+//           return path.mid(pos, path.lastIndexOf('.') - pos);
+//           break;
+//       }
+//       }
+
 
     if(role == Qt::DecorationRole) {
         if(itemIndex->type == IMAGE) {
@@ -692,6 +711,84 @@ void LectureModel::printImage(QUrl url)
         painter.end();
     }
 }
+void LectureModel::print()
+{
+    DataWrapper* item = static_cast<DataWrapper*>(selectedIndex.internalPointer());
+    QPrinter printer;
+    QPrintDialog *dialog = new QPrintDialog(&printer,0);
+    if (item->type == THEME && item->children.count() > 0) {
+        //QPrinter printer;
+        //double yCoord = 0;
+        //int lengthPage = 2300;
+        //QPrintDialog *dialog = new QPrintDialog(&printer,0);
+        if(dialog->exec() == QDialog::Accepted) {
+            QPainter painter(&printer);
+            QList<DataWrapper*> images = item->children;
+            //for (int k = 0; k < images.count(); k++) {
+            int page = images.count();
+            painter.begin(&printer);
+            while (page >= 1) {
+                QUrl url = QUrl::fromLocalFile(images[page]->data->name);
+                QPixmap pix;
+                pix.load(url.toLocalFile());
+                QPainter painter(&printer);
+                painter.drawPixmap(QPoint(0, 0), pix);
+                printer.newPage();
+            }
+            painter.end();
+        }
+
+                /*QUrl url = (new QUrl(static_cast<IData*>(images[k]->data)->path))->toString();
+                QPixmap pix;
+                pix.load(url.toString());
+
+                  QRect rect = painter.viewport();
+                  QSize size = pix.size();
+                  size.scale(rect.size(), Qt::KeepAspectRatio);
+                  painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
+                  if (( yCoord + size.rheight() + size.height() + pix.height() / 2) > lengthPage){
+                      printer.newPage();
+                      yCoord = 0;
+                  }
+                  painter.setWindow(pix.rect());
+                  painter.drawPixmap(QPoint(0, yCoord), pix);
+                  yCoord +=  size.rheight() + size.height() + pix.height() / 2;*/
+    }
+}
+
+//    if (item->type == COURSE && item->children.count() > 0) {
+//            QPrinter printer;
+//            double yCoord = 0;
+//            QPrintDialog *dialog = new QPrintDialog(&printer,0);
+//            int lengthPage = 2300;
+//            if(dialog->exec() == QDialog::Accepted){
+//            QPainter painter(&printer);
+//            QList<DataWrapper*> themes = item->children;
+//            for (int k = 0; k < themes.count(); k++) {
+//                if (themes[k]->children.count() == 0) {
+//                    fetchMore(index(k, 0, indx));
+//                }
+//                QList<DataWrapper*> images = themes[k]->children;
+//                for (int l = 0; l < images.count(); l++) {
+//                    QUrl url = (new QUrl(static_cast<IData*>(images[l]->data)->path))->toString();
+//                    QPixmap pix;
+//                    pix.load(url.toString());
+
+//                    QRect rect = painter.viewport();
+//                    QSize size = pix.size();
+//                    size.scale(rect.size(), Qt::KeepAspectRatio);
+//                    painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
+//                    if (( yCoord + size.rheight() + size.height() + pix.height() / 2) > lengthPage){
+//                        printer.newPage();
+//                        yCoord = 0;
+//                    }
+//                    painter.setWindow(pix.rect());
+//                    painter.drawPixmap(QPoint(0, yCoord), pix);
+//                    yCoord +=  size.rheight() + size.height() + pix.height() / 2;;
+//                }
+//            }
+//      }
+//  }
 
 QString LectureModel::path(QString p, QString str)
 {
@@ -867,4 +964,28 @@ QModelIndex LectureModel::setDragIndex(const QModelIndex &index)
 {
     draggedItemIndex = index;
     return index;
+}
+
+/*QHash<int, QByteArray> LectureModel::roleNames() const {
+    QHash<int, QByteArray> roles;
+    roles[TERM_M] = "term";
+    roles[SUBJECT_M] = "subject";
+    roles[THEME_M] = "theme";
+    roles[IMAGE_M] = "image";
+    return roles;
+}*/
+
+bool LectureModel:: typeItem (QModelIndex &index, int type)
+{
+    DataWrapper* item = static_cast<DataWrapper*>(indexOfImage.internalPointer());
+    if(item->type == static_cast<h_type>(type))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+
 }

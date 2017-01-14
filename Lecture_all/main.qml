@@ -83,21 +83,11 @@ ApplicationWindow {
                     }*/
                 }
             }
-        }
-
-        Menu {
-            id: menuPrintImage
-            enabled: false
-            title: qsTr("Печать")
 
             MenuItem {
-                text: qsTr("&Печать изображения")
-                onTriggered: myModel.printImage(image.source)
-            }
-
-            MenuItem {
-                text: qsTr("&Печать со свойстами")
-                onTriggered: item_print.visible = true
+                id: print_theme
+                text: qsTr("&Печать темы")
+                onTriggered: myModel.print()
             }
         }
     }
@@ -151,36 +141,66 @@ ApplicationWindow {
                         }
                     }
 
-                   /* Component {
 
-                        id: dndDelegate
-                        Item {
-                            id: wrapper
-                            width: 30
-                            height: 15
-                            Text {
-                                id: itemTree
-                                anchors.fill: parent
-                                //text: ????????????
-                            }
-                            states: [
-                                State {
-                                    name: "inDrag"
-                                    when: index === treeView.draggedItemIndex
-                                    PropertyChanges { target: itemTree; parent: dndContainer }
-                                    //PropertyChanges { target: itemTree; anchors.centerIn: undefined }
-                                    PropertyChanges { target: itemTree; x: mouseArea_tree.mouseX - itemTree.width / 2 }
-                                    PropertyChanges { target: itemTree; y: mouseArea_tree.mouseY - itemTree.height / 2 }
-                                }
-                            ]
-                        }
-                    }*/
+//                    Component{
+
+//                                            id: treeDelegate
+//                        Item {
+//                                                    id: wrapper
+//                                                    width: 100
+//                                                    height: 15
+
+
+
+//                        Label {
+//                             id: itemTree
+//                             anchors.fill: parent
+//                             color: "black"
+//                                                    }
+
+
+
+//                                                    states: [
+//                                                        State {
+//                                                            name: "text_term"
+//                                                            when: myModel.typeItem(index,1)===true
+//                                                            PropertyChanges { target: itemTree; text: myModel.data(index,1)}
+//                                                            },
+//                                                        State {
+//                                                            name: "text_subject"
+//                                                            when: myModel.typeItem(index,2)===true
+//                                                            PropertyChanges { target: itemTree; text: myModel.data(index,0)}
+//                                                            },
+//                                                        State {
+//                                                            name: "text_theme"
+//                                                            when: myModel.typeItem(index,3)===true
+//                                                            PropertyChanges { target: itemTree; text: myModel.data(index,0)}
+//                                                            },
+//                                                        State {
+//                                                            name: "text_image"
+//                                                            when: myModel.typeItem(index,4)===true
+//                                                            PropertyChanges { target: itemTree; text: myModel.data(index,0)}
+//                                                            },
+//                                                        State {
+//                                                            name: "inDrag"
+//                                                            when: index
+//                                                            PropertyChanges { target: itemTree; parent: dndContainer }
+//                                                            PropertyChanges { target: itemTree; anchors.fill: undefined }
+//                                                            PropertyChanges { target: itemTree; x: mouseArea_tree.mouseX}// - itemTree.width / 2 }
+//                                                            PropertyChanges { target: itemTree; y: mouseArea_tree.mouseY }//- itemTree.height / 2 }
+//                                                        }
+//                                                    ]
+
+//                                                }}
+
 
                   TreeView {
                             id: treeView
                             anchors.fill: r_tree
                             model: myModel
                             //itemDelegate: treeDelegate
+
+
 
                             /*states: [
                                 State {
@@ -196,6 +216,7 @@ ApplicationWindow {
                             property var draggItemIndex: -1
 
                             TableViewColumn {
+                                id: column
                                 title: "Оглавление"
                                 role: "display"
                                 width: 500
@@ -226,6 +247,7 @@ ApplicationWindow {
                                                 button_improve.enabled = true
                                                 button_turn.enabled = true
                                                 slider_image.visible = true
+                                                button_print.enabled = true
                                             }
                                         }
                                         break
@@ -235,6 +257,7 @@ ApplicationWindow {
                                         addSubject.visible = myModel.showMenuItem(index_2,2)
                                         addTheme.visible = myModel.showMenuItem(index_2,3)
                                         addImage.visible = myModel.showMenuItem(index_2,4)
+                                        print_theme.visible = myModel.showMenuItem(index_2,4)
                                         myModel.setSelIndex(index_2)
                                         menuAdd.popup()
                                     }
@@ -249,10 +272,11 @@ ApplicationWindow {
                                         //itemTree.text = myModel.data(treeView.draggItemIndex,0)
                                     }
                                 }
+                                //on
                                 onReleased: {
                                     if (treeView.draggItemIndex !== -1) {
-                                        var draggedIndex = treeView.draggedItemIndex
-                                        treeView.draggedItemIndex = -1
+                                        var draggedIndex = treeView.draggItemIndex
+                                        treeView.draggItemIndex = -1
                                         //myModel.move(draggedIndex,myModel.indexAt(mouseX, mouseY),1)
                                     }
                                 }
@@ -417,6 +441,29 @@ ApplicationWindow {
                         value: 1
                         visible: false
                         tickmarksEnabled: true
+                    }
+
+                    Button {
+                        id: button_print
+                         y: 1
+                        anchors.left: slider_image.right
+                        anchors.leftMargin: 10
+                        enabled: false
+                        width: 35
+                        height: 35
+                        style: ButtonStyle {
+                            background: Rectangle {
+                                color: "#b5d5ee"
+                                border.color: "#ffffff"
+                                radius: 2
+                                Image {
+                                    width: 34
+                                    height: 34
+                                    source: "image_button/print.png"
+                                }
+                            }
+                        }
+                        onClicked: myModel.printImage(image.source)
                     }
                 }
 
