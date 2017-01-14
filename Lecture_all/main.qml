@@ -1,9 +1,11 @@
 import QtQuick 2.7
+import QtQuick.Controls 2.0
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Window 2.0
+import QtQml.Models 2.2
 
 ApplicationWindow {
     id: applicationWindow
@@ -64,7 +66,22 @@ ApplicationWindow {
 
             MenuItem {
                 text: qsTr("&Удалить элемент")
-                onTriggered: myModel.removeUnit()
+                onTriggered: {
+                    myModel.removeUnit()
+                    /*if (myModel.data(treeView.currentIndex,1)) {
+                        image.source = myModel.data(treeViw.currentIndex,1);
+                    }
+                    else {
+                        image.source = "";
+                    }*/
+
+                    /*if (myModel.clearSourceImage() === true) {
+                        image.sourse = ""
+                        image.cache = false
+                        sourceChanged(image.source)
+                        image.cache = true
+                    }*/
+                }
             }
         }
 
@@ -116,77 +133,161 @@ ApplicationWindow {
             Background {
                 id: form_image_one
 
-                TreeView {
-                    id: treeView
+                Item{
+                    id: r_tree
                     x: 0
                     y: 0
                     width: parent.width/3
                     height: parent.height/1.1
-                    model: myModel
-
-                    TableViewColumn {
-                        title: "Оглавление"
-                        role: "display"
-                        width: 500
-                    }
 
                     MouseArea {
-                        id: mouseArea_tree
-                        anchors.bottomMargin: 21
+                        id: mouseArea_null
                         anchors.fill: parent
                         hoverEnabled: true
-                        acceptedButtons: Qt.RightButton | Qt.LeftButton
                         onEntered: {
                             if (myModel.rowCount(treeView.rootIndex) === 0)
+                                //база пустая вывести окошко, при нажатии на ОК выдаст ->
                                 item_term.visible = true
                         }
-                        onClicked: {
-                            switch (mouse.button) {
-                            case Qt.LeftButton:
-                                var index_1 = parent.indexAt(mouse.x, mouse.y)
-                                if (index_1.valid) {
-                                    parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1)
-                                    if(myModel.data(index_1,1)) {
-                                        image.source = myModel.data(index_1,1)
-                                        myModel.setIndexOpenImage(index_1)
-                                        button_improve.enabled = true
-                                        button_turn.enabled = true
-                                        slider_image.visible = true
+                    }
+
+                   /* Component {
+
+                        id: dndDelegate
+                        Item {
+                            id: wrapper
+                            width: 30
+                            height: 15
+                            Text {
+                                id: itemTree
+                                anchors.fill: parent
+                                //text: ????????????
+                            }
+                            states: [
+                                State {
+                                    name: "inDrag"
+                                    when: index === treeView.draggedItemIndex
+                                    PropertyChanges { target: itemTree; parent: dndContainer }
+                                    //PropertyChanges { target: itemTree; anchors.centerIn: undefined }
+                                    PropertyChanges { target: itemTree; x: mouseArea_tree.mouseX - itemTree.width / 2 }
+                                    PropertyChanges { target: itemTree; y: mouseArea_tree.mouseY - itemTree.height / 2 }
+                                }
+                            ]
+                        }
+                    }*/
+
+                  TreeView {
+                            id: treeView
+                            anchors.fill: r_tree
+                            model: myModel
+                            //itemDelegate: treeDelegate
+
+                            /*states: [
+                                State {
+                                    name: "inDrag"
+                                    when: index === treeView.draggedItemIndex
+                                    PropertyChanges { target: treeView.section; parent: treeView}
+                                    //PropertyChanges { target: itemTree; anchors.centerIn: undefined }
+                                    PropertyChanges { target: treeView.section.labelPositioning; x: mouseArea_tree.mouseX }
+                                    PropertyChanges { target: treeView.section.labelPositioning; y: mouseArea_tree.mouseY }//- itemTree.height / 2 }
+                                }
+                            ]*/
+
+                            property var draggItemIndex: -1
+
+                            TableViewColumn {
+                                title: "Оглавление"
+                                role: "display"
+                                width: 500
+                            }
+
+                            Item {
+                                id: dndContainer
+                                anchors.fill: parent
+                            }
+
+                            MouseArea {
+                                id: mouseArea_tree
+                                anchors.bottomMargin: 21
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                acceptedButtons: Qt.RightButton | Qt.LeftButton
+                                //containsPress: true
+
+                                onClicked: {
+                                    switch (mouse.button) {
+                                    case Qt.LeftButton:
+                                        var index_1 = parent.indexAt(mouse.x, mouse.y)
+                                        if (index_1.valid) {
+                                            parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1)
+                                            if(myModel.data(index_1,1)) {
+                                                image.source = myModel.data(index_1,1)
+                                                myModel.setIndexOpenImage(index_1)
+                                                button_improve.enabled = true
+                                                button_turn.enabled = true
+                                                slider_image.visible = true
+                                            }
+                                        }
+                                        break
+                                    case Qt.RightButton:
+                                    var index_2 = parent.indexAt(mouse.x, mouse.y)
+                                    if (index_2.valid) {
+                                        addSubject.visible = myModel.showMenuItem(index_2,2)
+                                        addTheme.visible = myModel.showMenuItem(index_2,3)
+                                        addImage.visible = myModel.showMenuItem(index_2,4)
+                                        myModel.setSelIndex(index_2)
+                                        menuAdd.popup()
+                                    }
+                                    break
+                                    default: break
                                     }
                                 }
-                                break
-                            case Qt.RightButton:
-                                var index_2 = parent.indexAt(mouse.x, mouse.y)
-                                if (index_2.valid) {
-                                    addSubject.visible = myModel.showMenuItem(index_2,2)
-                                    addTheme.visible = myModel.showMenuItem(index_2,3)
-                                    addImage.visible = myModel.showMenuItem(index_2,4)
-                                    myModel.setSelIndex(index_2)
-                                    menuAdd.popup()
+                                onPressAndHold: {
+                                    var index = parent.indexAt(mouse.x, mouse.y)
+                                    if (index.valid) {
+                                        treeView.draggItemIndex = myModel.setDragIndex(index)
+                                        //itemTree.text = myModel.data(treeView.draggItemIndex,0)
+                                    }
                                 }
-                                break
-                            default: break
+                                onReleased: {
+                                    if (treeView.draggItemIndex !== -1) {
+                                        var draggedIndex = treeView.draggedItemIndex
+                                        treeView.draggedItemIndex = -1
+                                        //myModel.move(draggedIndex,myModel.indexAt(mouseX, mouseY),1)
+                                    }
+                                }
                             }
-                        }
-                    }
+                  }
                 }
 
                 Item {
                     id: r_button
-                    anchors.left: treeView.right
+                    anchors.left: r_tree.right
                     width: form_image_one.width*2/3   //ширина
-                    height: 30
+                    height: 40
                     //color: "#00000000" // прозрачность
 
                     Button {
                         id: button_improve
-                        y: 0
+                        y: 1
                         anchors.left: parent.left
-                        anchors.leftMargin: 3
-                        width: 92
-                        height: 27
-                        text: "Улучшить"
+                        anchors.leftMargin: 10
+                        width: 35
+                        height: 35
                         enabled: false
+                        style: ButtonStyle {
+                            background: Rectangle {
+                                color: "#b5d5ee"
+                                border.color: "#ffffff"
+                                radius: 2
+                                Image {
+                                    width: 34
+                                    height: 34
+                                    source: "image_button/improve.png"
+                                }
+                            }
+                        }
+
                         onClicked: {
                             image.source = myModel.improveImage(image.source)
                             slider_rotation.value = 0
@@ -199,12 +300,23 @@ ApplicationWindow {
 
                     Button {
                         id: button_save
-                        y: 0
+                        y: 1
                         anchors.left: button_improve.right
-                        anchors.leftMargin: 3
-                        width: 92
-                        height: 27
-                        text: "Сохранить"
+                        anchors.leftMargin: 10
+                        width: 35
+                        height: 35
+                        style: ButtonStyle {
+                            background: Rectangle {
+                                color: "#b5d5ee"
+                                border.color: "#ffffff"
+                                radius: 2
+                                Image {
+                                    width: 34
+                                    height: 34
+                                    source: "image_button/save.png"
+                                }
+                            }
+                        }
                         enabled: false
                         onClicked: {
                             image.source = myModel.save(image.source, image.scale, image.rotation)
@@ -222,12 +334,24 @@ ApplicationWindow {
 
                     Button {
                         id: button_cut
+                         y: 1
                         anchors.left: button_save.right
-                        anchors.leftMargin: 3
+                        anchors.leftMargin: 10
                         enabled: false
-                        width: 92
-                        height: 27
-                        text: "Обрезать"
+                        width: 35
+                        height: 35
+                        style: ButtonStyle {
+                            background: Rectangle {
+                                color: "#b5d5ee"
+                                border.color: "#ffffff"
+                                radius: 2
+                                Image {
+                                    width: 34
+                                    height: 34
+                                    source: "image_button/cut.png"
+                                }
+                            }
+                        }
                         onClicked: {
                             image.source = myModel.cut(canvas.firstX,canvas.firstY,canvas.lastX,canvas.lastY,image.source)
                             slider_rotation.value = 0
@@ -244,10 +368,22 @@ ApplicationWindow {
                     Button {
                         id: button_turn
                         anchors.left: button_cut.right
-                        anchors.leftMargin: 3
-                        width: 27
-                        height: 27
-                        iconSource: "image_button/right.png"
+                        anchors.leftMargin: 10
+                        width: 35
+                         y: 1
+                        height: 35
+                        style: ButtonStyle {
+                            background: Rectangle {
+                                color: "#b5d5ee"
+                                border.color: "#ffffff"
+                                radius: 2
+                                Image {
+                                    width: 34
+                                    height: 34
+                                    source: "image_button/rotate.png"
+                                }
+                            }
+                        }
                         enabled: false
                         onClicked: {
                             button_save.enabled = true
@@ -263,7 +399,7 @@ ApplicationWindow {
                     Slider {
                         id: slider_rotation
                         anchors.left: button_turn.right
-                        anchors.leftMargin: 3
+                        anchors.leftMargin: 10
                         width: 107
                         height: 27
                         stepSize: 0.001
@@ -275,38 +411,22 @@ ApplicationWindow {
                         width: 107
                         height: 27
                         anchors.left: slider_rotation.right
-                        anchors.leftMargin: 3
+                        anchors.leftMargin: 10
                         maximumValue: 1.7
                         minimumValue: 0.3
                         value: 1
                         visible: false
+                        tickmarksEnabled: true
                     }
                 }
 
                 Item {
                     id: r_image
                     anchors.top: r_button.bottom
-                    anchors.left: treeView.right
-                    width: form_image_one.width*2/3
-                    height: form_image_one.height-30
+                    anchors.left: r_tree.right
+                    width: form_image_one.width*2/3-20
+                    height: form_image_one.height-30-20
                     //color: "#00000000"
-
-                    /*Flickable {
-                        id: flick
-                        anchors.fill: r_image
-                        contentHeight: contentItem.childrenRect.height
-                        contentWidth: contentItem.childrenRect.width
-                        interactive: false
-                        ScrollBar.vertical: ScrollBar {
-                            active: true
-                            id:vert
-                            orientation: Qt.Vertical
-                        }
-                        ScrollBar.horizontal: ScrollBar {
-                            active: true
-                            id:horiz
-                            orientation: Qt.Horizontal
-                        }*/
 
                     ScrollView {
                         id: scrollView
@@ -335,6 +455,7 @@ ApplicationWindow {
                                         ctx.clearRect(0,0,canvas.width,canvas.height)
                                         ctx.beginPath()
                                         ctx.rect(firstX,firstY,lastX - firstX,lastY - firstY)
+                                        //ctx.strokeStyle = "#3a43d7"
                                         ctx.stroke()
                                     }
                                 }
@@ -394,7 +515,7 @@ ApplicationWindow {
                 Rectangle {
                     id: search_button
                     width: parent.width
-                    height: 37
+                    height: 40
                     color: "#00000000"
 
                     TextField {
@@ -410,13 +531,25 @@ ApplicationWindow {
 
                     Button {
                         id: button_search
+                         y: 1
                         anchors.left: textField_search.right
                         anchors.leftMargin: 10
                         anchors.top: parent.top
                         anchors.topMargin: 5
-                        width: 92
-                        height: 27
-                        text: qsTr("Поиск")
+                        width: 35
+                        height: 35
+                        style: ButtonStyle {
+                            background: Rectangle {
+                                color: "#b5d5ee"
+                                border.color: "#ffffff"
+                                radius: 2
+                                Image {
+                                    width: 34
+                                    height: 34
+                                    source: "image_button/search.png"
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -484,6 +617,7 @@ ApplicationWindow {
                 myModel.insertUnit(textField_term.text,1)
                 item_term.visible=false
                 textField_term.text = ""
+                mouseArea_null.visible = false
             }
         }
 

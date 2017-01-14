@@ -68,7 +68,7 @@ public:
     bool hasChildren(const QModelIndex &parent) const;
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild);
     Qt::ItemFlags flags(const QModelIndex &index) const;
-    //Qt::DropAction supportedDropActions() const;
+    Qt::DropActions supportedDropActions() const;
 
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
@@ -96,11 +96,16 @@ public:
     Q_INVOKABLE QUrl save(QUrl url, qreal scaleFactor, qreal angle);
     Q_INVOKABLE QUrl improveImage(QUrl url);
     Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
+    Q_INVOKABLE bool clearSourceImage();
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
     //установка значения selectedIndex
     Q_INVOKABLE void setSelIndex(const QModelIndex &index);
+    //установка значения draggedItemIndex
+    Q_INVOKABLE QModelIndex setDragIndex(const QModelIndex &index);
+
+    //QModelIndex draggedItemIndex;
 
 private:
 
@@ -110,6 +115,7 @@ private:
     int idForInsert;
     QModelIndex selectedIndex;  // используется как родительский индекс для добавления предмета, темы и картинки
     QModelIndex indexOfImage;
+    QModelIndex draggedItemIndex;
    //static const int INSERT_ID_ROLE = Qt::UserRole + 1;
    //static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;
    //static const int INSERT_NAME_ROLE = Qt::UserRole + 3;

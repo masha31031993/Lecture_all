@@ -1,3 +1,4 @@
+
 #include "lecturemodel.h"
 
 
@@ -371,17 +372,19 @@ bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //�
 Qt::ItemFlags LectureModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
-
-    if (index.isValid())
-        return Qt::ItemIsDragEnabled | defaultFlags | Qt::ItemIsEditable;
-    else
-        return defaultFlags;
+    /*DataWrapper* item, currentItem;
+        item = static_cast<DataWrapper*>(index.internalPointer());
+        currentItem = static_cast<DataWrapper*>(this->dra)*/
+        if (index.isValid())
+            return Qt::ItemIsDragEnabled | defaultFlags | Qt::ItemIsEditable ;//| Qt::ItemIsDropEnabled;
+        else
+            return defaultFlags;
 }
 
-/*Qt::DropAction LectureModel::supportedDropActions() const
+Qt::DropActions LectureModel::supportedDropActions() const
 {
-    return Qt::MoveAction;
-}*/
+    return Qt::MoveAction | Qt::CopyAction;
+}
 
 void LectureModel::insertUnit(QString unitName, int type)
 {
@@ -845,4 +848,23 @@ QUrl LectureModel::improveImage(QUrl url) {
     if (ok_remove == false)
         qDebug()<<"Файл"<<path_d<<"не удалился";
     return QUrl::fromLocalFile(path_image);
+}
+
+bool LectureModel::clearSourceImage() {
+    DataWrapper* item = static_cast<DataWrapper*>(indexOfImage.internalPointer());
+    if(item->type >= static_cast<h_type>(3))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+QModelIndex LectureModel::setDragIndex(const QModelIndex &index)
+{
+    draggedItemIndex = index;
+    return index;
 }
