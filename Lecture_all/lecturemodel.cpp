@@ -717,14 +717,9 @@ void LectureModel::print()
     QPrinter printer;
     QPrintDialog *dialog = new QPrintDialog(&printer,0);
     if (item->type == THEME && item->children.count() > 0) {
-        //QPrinter printer;
-        //double yCoord = 0;
-        //int lengthPage = 2300;
-        //QPrintDialog *dialog = new QPrintDialog(&printer,0);
         if(dialog->exec() == QDialog::Accepted) {
             QPainter painter(&printer);
             QList<DataWrapper*> images = item->children;
-            //for (int k = 0; k < images.count(); k++) {
             int page = images.count();
             painter.begin(&printer);
             while (page >= 1) {
@@ -737,58 +732,9 @@ void LectureModel::print()
             }
             painter.end();
         }
-
-                /*QUrl url = (new QUrl(static_cast<IData*>(images[k]->data)->path))->toString();
-                QPixmap pix;
-                pix.load(url.toString());
-
-                  QRect rect = painter.viewport();
-                  QSize size = pix.size();
-                  size.scale(rect.size(), Qt::KeepAspectRatio);
-                  painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
-                  if (( yCoord + size.rheight() + size.height() + pix.height() / 2) > lengthPage){
-                      printer.newPage();
-                      yCoord = 0;
-                  }
-                  painter.setWindow(pix.rect());
-                  painter.drawPixmap(QPoint(0, yCoord), pix);
-                  yCoord +=  size.rheight() + size.height() + pix.height() / 2;*/
     }
 }
 
-//    if (item->type == COURSE && item->children.count() > 0) {
-//            QPrinter printer;
-//            double yCoord = 0;
-//            QPrintDialog *dialog = new QPrintDialog(&printer,0);
-//            int lengthPage = 2300;
-//            if(dialog->exec() == QDialog::Accepted){
-//            QPainter painter(&printer);
-//            QList<DataWrapper*> themes = item->children;
-//            for (int k = 0; k < themes.count(); k++) {
-//                if (themes[k]->children.count() == 0) {
-//                    fetchMore(index(k, 0, indx));
-//                }
-//                QList<DataWrapper*> images = themes[k]->children;
-//                for (int l = 0; l < images.count(); l++) {
-//                    QUrl url = (new QUrl(static_cast<IData*>(images[l]->data)->path))->toString();
-//                    QPixmap pix;
-//                    pix.load(url.toString());
-
-//                    QRect rect = painter.viewport();
-//                    QSize size = pix.size();
-//                    size.scale(rect.size(), Qt::KeepAspectRatio);
-//                    painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
-//                    if (( yCoord + size.rheight() + size.height() + pix.height() / 2) > lengthPage){
-//                        printer.newPage();
-//                        yCoord = 0;
-//                    }
-//                    painter.setWindow(pix.rect());
-//                    painter.drawPixmap(QPoint(0, yCoord), pix);
-//                    yCoord +=  size.rheight() + size.height() + pix.height() / 2;;
-//                }
-//            }
-//      }
-//  }
 
 QString LectureModel::path(QString p, QString str)
 {
