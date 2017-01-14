@@ -174,6 +174,17 @@ ApplicationWindow {
                             default: break
                             }
                         }
+                        onReleased: {
+                            if(myModel.draggedItemIndex != -1){
+                                var draggedIndex = myModel.draggedItemIndex
+                                myModel.draggedItemIndex = -1
+                                myModel.move(draggedIndex,myModel.indexAt(mouseX, mouseY),1)
+                            }
+                        }
+
+                        onPressed: {
+                            myModel.draggedItemIndex = parent.indexAt(mouse.x, mouse.y)
+                        }
                     }
                 }
 

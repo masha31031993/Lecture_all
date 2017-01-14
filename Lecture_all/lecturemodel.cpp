@@ -371,17 +371,19 @@ bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //Ð
 Qt::ItemFlags LectureModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
-
+    /*DataWrapper* item, currentItem;
+    item = static_cast<DataWrapper*>(index.internalPointer());
+    currentItem = static_cast<DataWrapper*>(this->dra)*/
     if (index.isValid())
-        return Qt::ItemIsDragEnabled | defaultFlags | Qt::ItemIsEditable;
+        return Qt::ItemIsDragEnabled | defaultFlags | Qt::ItemIsEditable ;//| Qt::ItemIsDropEnabled;
     else
         return defaultFlags;
 }
 
-/*Qt::DropAction LectureModel::supportedDropActions() const
+Qt::DropActions LectureModel::supportedDropActions() const
 {
-    return Qt::MoveAction;
-}*/
+    return Qt::MoveAction | Qt::CopyAction;
+}
 
 void LectureModel::insertUnit(QString unitName, int type)
 {

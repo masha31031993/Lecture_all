@@ -66,7 +66,7 @@ public:
     bool hasChildren(const QModelIndex &parent) const;
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild);
     Qt::ItemFlags flags(const QModelIndex &index) const;
-    //Qt::DropAction supportedDropActions() const;
+    Qt::DropActions supportedDropActions() const;
 
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
@@ -99,6 +99,9 @@ public:
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
     //установка значения selectedIndex
     Q_INVOKABLE void setSelIndex(const QModelIndex &index);
+
+
+    Q_INVOKABLE QModelIndex draggedItemIndex;
 
 private:
 

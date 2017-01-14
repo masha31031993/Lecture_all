@@ -31,6 +31,10 @@ int main(int argc, char *argv[])
     QTreeView view;
     view.setModel(model);
     view.setWindowTitle("Tree model");
+    view.setSelectionMode(QAbstractItemView::SingleSelection);
+    view.setDragEnabled(true);
+    view.viewport()->setAcceptDrops(true);
+    view.setDropIndicatorShown(true);
     view.show();*/
 // приложение
     LectureModel *ip = new LectureModel("../LecturesDB");
