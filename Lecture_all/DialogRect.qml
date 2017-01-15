@@ -21,7 +21,7 @@ Rectangle {
         height: 35
         style: ButtonStyle {
             background: Rectangle {
-                color: "#b5d5ee"
+                color: control.pressed ? "#55aaff"  : "#b5d5ee"
                 border.color: "#ffffff"
                 radius: 2
                 Image {

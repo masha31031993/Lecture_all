@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include <databasehandler.h>
+#include <searchmodel.h>
 #include <QModelIndex>
 #include <QVariant>
 #include <QImage>
@@ -104,6 +105,8 @@ public:
     Q_INVOKABLE bool clearSourceImage();
     //QHash<int, QByteArray> roleNames() const;
     Q_INVOKABLE bool typeItem (QModelIndex &index, int type);
+    Q_INVOKABLE QString showTag();
+    Q_INVOKABLE QString showComment();
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
@@ -112,7 +115,7 @@ public:
     //установка значения draggedItemIndex
     Q_INVOKABLE QModelIndex setDragIndex(const QModelIndex &index);
 
-    //QModelIndex draggedItemIndex;
+    Q_INVOKABLE SearchModel* getSearchModel();
 
 private:
 
@@ -120,6 +123,8 @@ private:
     DataBaseHandler *dataBase;
     DataWrapper* root;
     int idForInsert;
+
+   SearchModel* searchModel;
     QModelIndex selectedIndex;  // используется как родительский индекс для добавления предмета, темы и картинки
     QModelIndex indexOfImage;
     QModelIndex draggedItemIndex;

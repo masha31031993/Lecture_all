@@ -13,5 +13,6 @@
         <file>cut.png</file>
         <file>improve.png</file>
         <file>close.png</file>
+        <file>no_image.png</file>
     </qresource>
 </RCC>

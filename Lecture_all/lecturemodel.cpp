@@ -1,12 +1,11 @@
-
 #include "lecturemodel.h"
-
 
 LectureModel::LectureModel(QString dbPath, QObject *parent)
     : QAbstractItemModel(parent)
 {
     dbName = dbPath; // dbName = append(dbPath)
     dataBase = new DataBaseHandler(dbName);
+    searchModel = new SearchModel(dataBase);
     root = new DataWrapper;
     root->id = 0;
     root->count = 0;
@@ -391,13 +390,13 @@ bool LectureModel::insertRows(int row, int count, const QModelIndex &parent) //�
 Qt::ItemFlags LectureModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
-    /*DataWrapper* item, currentItem;
-        item = static_cast<DataWrapper*>(index.internalPointer());
-        currentItem = static_cast<DataWrapper*>(this->dra)*/
-        if (index.isValid())
-            return Qt::ItemIsDragEnabled | defaultFlags | Qt::ItemIsEditable ;//| Qt::ItemIsDropEnabled;
-        else
-            return defaultFlags;
+        /*DataWrapper* item, currentItem;
+            item = static_cast<DataWrapper*>(index.internalPointer());
+            currentItem = static_cast<DataWrapper*>(this->dra)*/
+            if (index.isValid())
+                return Qt::ItemIsDragEnabled | defaultFlags | Qt::ItemIsEditable ;//| Qt::ItemIsDropEnabled;
+            else
+                return defaultFlags;
 }
 
 Qt::DropActions LectureModel::supportedDropActions() const
@@ -695,14 +694,7 @@ void LectureModel::printImage(QUrl url)
 {
     QPixmap pix;
     pix.load(url.toLocalFile());
-    QPrinter printer;
-    /*QPrintPreviewDialog *dlg = new QPrintPreviewDialog(&printer,0); // ????
-    if(dlg->exec() == QDialog::Accepted)
-    {
-        QPainter painter(&printer);
-        painter.drawPixmap(QPoint(0, 0), pix);
-        painter.end();
-    }*/
+    QPrinter printer(QPrinter::HighResolution);
     QPrintDialog *dialog = new QPrintDialog(&printer,0);
     if(dialog->exec() == QDialog::Accepted)
     {
@@ -714,25 +706,56 @@ void LectureModel::printImage(QUrl url)
 void LectureModel::print()
 {
     DataWrapper* item = static_cast<DataWrapper*>(selectedIndex.internalPointer());
-    QPrinter printer;
+    QPrinter printer(QPrinter::HighResolution);
     QPrintDialog *dialog = new QPrintDialog(&printer,0);
+
     if (item->type == THEME && item->children.count() > 0) {
         if(dialog->exec() == QDialog::Accepted) {
-            QPainter painter(&printer);
             QList<DataWrapper*> images = item->children;
-            int page = images.count();
+            QPainter painter(&printer);
             painter.begin(&printer);
-            while (page >= 1) {
-                QUrl url = QUrl::fromLocalFile(images[page]->data->name);
+            int i = 0;
+           while (i<images.count()) {
+                QUrl url = QUrl::fromLocalFile(images[i]->data->name);
                 QPixmap pix;
                 pix.load(url.toLocalFile());
-                QPainter painter(&printer);
+                QSize size = pix.size();
+                double xscale = printer.pageRect().width()/size.width();
+                double yscale = printer.pageRect().height()/size.height();
+                double scale = qMin(xscale, yscale);
+
+                painter.scale(scale, scale);
                 painter.drawPixmap(QPoint(0, 0), pix);
-                printer.newPage();
+
+                painter.scale(1/scale, 1/scale);
+                if (i<images.count())
+                    printer.newPage();
+
+
             }
             painter.end();
         }
     }
+}
+
+QString LectureModel:: showTag()
+{
+    DataWrapper* item = static_cast<DataWrapper*>(indexOfImage.internalPointer());
+    QString tag = item->data->tags;
+    if (tag.trimmed().length() != 0)
+        return tag;
+    else
+        return "";
+}
+
+QString LectureModel:: showComment()
+{
+   DataWrapper* item = static_cast<DataWrapper*>(indexOfImage.internalPointer());
+   QString comment = item->data->comment;
+   if (comment.trimmed().length() != 0)
+       return comment;
+   else
+       return "";
 }
 
 
@@ -853,6 +876,12 @@ QUrl LectureModel::save(QUrl url, qreal scaleFactor, qreal angle)
     matr = matr.rotate(angle);
     image = image.transformed(matr,Qt::SmoothTransformation);
 
+   /* QMatrix matrix;
+    QPoint center = image.rect().center();
+    matrix.translate(center.x(),center.y());
+    matrix.rotate(angle);
+image = image.transformed(matrix,Qt::SmoothTransformation);*/
+
     bool ok = image.save(url.toLocalFile());
      if (ok == false)
          qDebug()<<"Изображение не сохранилось";
@@ -882,10 +911,10 @@ QUrl LectureModel::improveImage(QUrl url) {
     ok_remove = file_gray.remove(path_gray);
     if (ok_remove == false)
         qDebug()<<"Файл"<<path_gray<<"не удалился";
-    //QFile file_gauss(path_gauss);
-    //ok_remove = file_gauss.remove(path_gauss);
-    //if (ok_remove == false)
-    //    qDebug()<<"Файл"<<path_gauss<<"не удалился";
+    QFile file_gauss(path_gauss);
+    ok_remove = file_gauss.remove(path_gauss);
+    if (ok_remove == false)
+        qDebug()<<"Файл"<<path_gauss<<"не удалился";
     QFile file_d(path_d);
     ok_remove = file_d.remove(path_d);
     if (ok_remove == false)
@@ -935,3 +964,12 @@ bool LectureModel:: typeItem (QModelIndex &index, int type)
 
 
 }
+
+SearchModel* LectureModel::getSearchModel()
+{
+    return  searchModel;
+}
+
+
+
+

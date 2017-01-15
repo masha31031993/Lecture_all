@@ -6,6 +6,7 @@
 #include <QTreeView>
 #include <QtGui>
 #include "databasehandler.h"
+#include "searchmodel.h"
 #include "lecturemodel.h"
 #include <QQmlComponent>
 #include <QQmlContext>
@@ -43,7 +44,9 @@ int main(int argc, char *argv[])
 // приложение
     LectureModel *ip = new LectureModel("../LecturesDB");
     QQmlEngine engine;
+    SearchModel *sm = ip->getSearchModel();
     engine.rootContext()->setContextProperty("myModel", ip);
+    engine.rootContext()->setContextProperty("searchModel", sm);
     QQmlComponent component(&engine, QUrl("qrc:/main.qml"));
     //engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     component.create();
