@@ -1,5 +1,6 @@
 import QtQuick 2.7
 import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 
 Rectangle {
     id: rect
@@ -16,9 +17,20 @@ Rectangle {
         anchors.rightMargin: 5
         anchors.top: parent.top
         anchors.topMargin: 5
-        width: 27
-        height: 27
-        iconSource: "image_button/close.png"
+        width: 35
+        height: 35
+        style: ButtonStyle {
+            background: Rectangle {
+                color: "#b5d5ee"
+                border.color: "#ffffff"
+                radius: 2
+                Image {
+                    width: 34
+                    height: 34
+                    source: "image_button/close.png"
+                }
+            }
+        }
         onClicked: rect.visible = false
     }
 }

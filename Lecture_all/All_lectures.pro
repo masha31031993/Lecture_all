@@ -5,7 +5,8 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
     databasehandler.cpp \
-    lecturemodel.cpp
+    lecturemodel.cpp \
+    searchmodel.cpp
 
 RESOURCES += qml.qrc
 
@@ -19,4 +20,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     databasehandler.h \
-    lecturemodel.h
+    lecturemodel.h \
+    searchmodel.h

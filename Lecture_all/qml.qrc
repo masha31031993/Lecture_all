@@ -6,7 +6,12 @@
         <file>DialogRect.qml</file>
     </qresource>
     <qresource prefix="/image_button">
-        <file>right.png</file>
+        <file>print.png</file>
+        <file>rotate.png</file>
+        <file>save.png</file>
+        <file>search.png</file>
+        <file>cut.png</file>
+        <file>improve.png</file>
         <file>close.png</file>
     </qresource>
 </RCC>

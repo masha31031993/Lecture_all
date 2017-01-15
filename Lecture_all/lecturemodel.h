@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include <databasehandler.h>
+#include <searchmodel.h>
 #include <QModelIndex>
 #include <QVariant>
 #include <QImage>
@@ -14,6 +15,8 @@
 #include <QPainter>
 #include "algorithm"
 #include <QFile>
+#include <QtMath>
+
 
 enum h_type{ROOT, TERM = 1, COURSE, THEME, IMAGE};
 
@@ -91,17 +94,28 @@ public:
     QString division(QString path_gray, QString path_gauss);
     Q_INVOKABLE QUrl cut(int x, int y, int n_x, int n_y, QUrl url);
     //Q_INVOKABLE QVariant paintRect(int x, int y, int n_x, int n_y, QUrl url);
-    Q_INVOKABLE QUrl save(QUrl url, qreal scaleFactor);
-    Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
+    Q_INVOKABLE QUrl save(QUrl url, qreal scaleFactor, qreal angle);
     Q_INVOKABLE QUrl improveImage(QUrl url);
+    Q_INVOKABLE void setIndexOpenImage(const QModelIndex &index);
+    Q_INVOKABLE bool clearSourceImage();
 
     //проверка необходимости показа пункта меню
     Q_INVOKABLE bool showMenuItem(const QModelIndex &index, int type);
     //установка значения selectedIndex
     Q_INVOKABLE void setSelIndex(const QModelIndex &index);
+    //установка значения draggedItemIndex
+    Q_INVOKABLE QModelIndex setDragIndex(const QModelIndex &index);
+
+    //QModelIndex draggedItemIndex;
 
 
-    Q_INVOKABLE QModelIndex draggedItemIndex;
+
+
+    Q_INVOKABLE SearchModel* getSearchModel();
+
+
+
+
 
 private:
 
@@ -109,9 +123,12 @@ private:
     DataBaseHandler *dataBase;
     DataWrapper* root;
     int idForInsert;
+
+    SearchModel* searchModel;
+
     QModelIndex selectedIndex;  // используется как родительский индекс для добавления предмета, темы и картинки
     QModelIndex indexOfImage;
-
+    QModelIndex draggedItemIndex;
    //static const int INSERT_ID_ROLE = Qt::UserRole + 1;
    //static const int INSERT_TYPE_ROLE = Qt::UserRole + 2;
    //static const int INSERT_NAME_ROLE = Qt::UserRole + 3;

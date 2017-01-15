@@ -303,7 +303,7 @@ bool DataBaseHandler::hasTerm(int term)
 }
 
 void DataBaseHandler::changeTermSerialNumber(int term)
-{    
+{
     QString strUpdate = "UPDATE subjects_and_themes SET Serial_number = Serial_number + 1 WHERE Term > %1;";
     QString strQuery = strUpdate.arg(term);
     QSqlQuery query;

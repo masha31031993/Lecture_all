@@ -1,3 +1,4 @@
+
 #include "lecturemodel.h"
 
 
@@ -6,6 +7,7 @@ LectureModel::LectureModel(QString dbPath, QObject *parent)
 {
     dbName = dbPath; // dbName = append(dbPath)
     dataBase = new DataBaseHandler(dbName);
+    searchModel = new SearchModel(dataBase);
     root = new DataWrapper;
     root->id = 0;
     root->count = 0;
@@ -372,12 +374,12 @@ Qt::ItemFlags LectureModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
     /*DataWrapper* item, currentItem;
-    item = static_cast<DataWrapper*>(index.internalPointer());
-    currentItem = static_cast<DataWrapper*>(this->dra)*/
-    if (index.isValid())
-        return Qt::ItemIsDragEnabled | defaultFlags | Qt::ItemIsEditable ;//| Qt::ItemIsDropEnabled;
-    else
-        return defaultFlags;
+        item = static_cast<DataWrapper*>(index.internalPointer());
+        currentItem = static_cast<DataWrapper*>(this->dra)*/
+        if (index.isValid())
+            return Qt::ItemIsDragEnabled | defaultFlags | Qt::ItemIsEditable ;//| Qt::ItemIsDropEnabled;
+        else
+            return defaultFlags;
 }
 
 Qt::DropActions LectureModel::supportedDropActions() const
@@ -597,17 +599,6 @@ void LectureModel::removeUnit()
     removeRows(serialNumber,1,parentIndex);
 }
 
-/*void LectureModel:: saveImage(QString str) {
-    QImage img = pimg.toImage();
-    QImageWriter writer(str);
-   // writer.setFileName(str);
-    writer.setFormat("jpeg");
-    writer.write(img);
-    if (writer.canWrite() == false)
-        qDebug() << "Файл не записался";
-}*/
-
-
 QString LectureModel::grayColor(QString url) {
     QImage image;
     image.load(url);
@@ -621,7 +612,6 @@ QString LectureModel::grayColor(QString url) {
         return path_gray;
     }
     else qDebug()<<"Изображение не считалось";
-    return "";
 }
 
 QString LectureModel::cutPath(QUrl/*QString*/ url) {
@@ -681,7 +671,6 @@ QString LectureModel::gauss(QString url) {
         return path_gauss;
     }
     else qDebug()<<"Изображение не считалось";
-    return "";
 }
 
 void LectureModel::printImage(QUrl url)
@@ -789,28 +778,43 @@ QUrl LectureModel::cut(int x, int y, int last_x, int last_y, QUrl url)
         qDebug()<<"Изображение не считалось";
     image = image.copy(x,y,last_x-x,last_y-y);
     QString path_image = url.toLocalFile();
-    QFile file(path_image);
-    bool ok_remove = file.remove(path_image);
-    if (ok_remove == false)
-        qDebug()<<"Файл"<<path_image<<"не удалился";
     bool ok_save = image.save(path_image);
      if (ok_save == false)
          qDebug()<<"Изображение не сохранилось";
      return QUrl::fromLocalFile(path_image);
 }
 
-QUrl LectureModel::save(QUrl url, qreal scaleFactor)
+/*QVariant LectureModel::paintRect(int x, int y, int n_x, int n_y, QUrl url)
+{
+    QPixmap image;
+    QPainter paint;
+    image.load(url.toLocalFile());
+    paint.begin(&image);
+    paint.drawRect(x,y,n_x-x,n_y-y);
+    QString path_image = path(url.toLocalFile(),"_paint");
+    bool ok = image.save(path_image);
+    if (ok == false)
+        qDebug()<<"Изображение не сохранилось";
+    return QUrl::fromLocalFile(path_image);
+}*/
+
+QUrl LectureModel::save(QUrl url, qreal scaleFactor, qreal angle)
 {
     QPixmap image;
     image.load(url.toLocalFile());
-    image.setDevicePixelRatio(scaleFactor);
-    QSize size_image = image.size()/image.devicePixelRatio();
-    image = image.scaled(size_image);
-    QString path_image = path(url.toLocalFile(),"_scale");
-     bool ok = image.save(path_image);
+
+    //image.setDevicePixelRatio(scaleFactor);
+    //QSize size_image = image.size()/image.devicePixelRatio();
+    //image = image.scaled(size_image);
+
+    QTransform matr;
+    matr = matr.rotate(angle);
+    image = image.transformed(matr,Qt::SmoothTransformation);
+
+    bool ok = image.save(url.toLocalFile());
      if (ok == false)
          qDebug()<<"Изображение не сохранилось";
-     return QUrl::fromLocalFile(path_image);
+    return QUrl::fromLocalFile(url.toLocalFile());
 }
 
 void LectureModel::setIndexOpenImage(const QModelIndex &index)
@@ -836,13 +840,47 @@ QUrl LectureModel::improveImage(QUrl url) {
     ok_remove = file_gray.remove(path_gray);
     if (ok_remove == false)
         qDebug()<<"Файл"<<path_gray<<"не удалился";
-    QFile file_gauss(path_gauss);
-    ok_remove = file_gauss.remove(path_gauss);
-    if (ok_remove == false)
-        qDebug()<<"Файл"<<path_gauss<<"не удалился";
+    //QFile file_gauss(path_gauss);
+    //ok_remove = file_gauss.remove(path_gauss);
+    //if (ok_remove == false)
+    //    qDebug()<<"Файл"<<path_gauss<<"не удалился";
     QFile file_d(path_d);
     ok_remove = file_d.remove(path_d);
     if (ok_remove == false)
         qDebug()<<"Файл"<<path_d<<"не удалился";
     return QUrl::fromLocalFile(path_image);
 }
+
+bool LectureModel::clearSourceImage() {
+    DataWrapper* item = static_cast<DataWrapper*>(indexOfImage.internalPointer());
+    if(item->type >= static_cast<h_type>(3))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+QModelIndex LectureModel::setDragIndex(const QModelIndex &index)
+{
+    draggedItemIndex = index;
+    return index;
+}
+
+SearchModel* LectureModel::getSearchModel()
+{
+    return  searchModel;
+}
+
+
+
+
+
+
+
+
+
+
