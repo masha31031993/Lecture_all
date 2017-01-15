@@ -3,7 +3,7 @@
 SearchModel::SearchModel(DataBaseHandler *db, QObject *parent) : QAbstractListModel(parent)
 {
     dataBase = db;
-    ImageData* imData = new ImageData;
+    /*ImageData* imData = new ImageData;
     imData->name = "../Pictures/example.png";
     rootList.append(imData);
     imData = new ImageData;
@@ -11,7 +11,7 @@ SearchModel::SearchModel(DataBaseHandler *db, QObject *parent) : QAbstractListMo
     rootList.append(imData);
     imData = new ImageData;
     imData->name = "../Pictures/2.jpg";
-    rootList.append(imData);
+    rootList.append(imData);*/
 }
 
 int SearchModel::rowCount(const QModelIndex &parent) const
@@ -97,7 +97,6 @@ bool SearchModel::setData(const QModelIndex &index, const QVariant &value, int r
             imData->comment = strComment;
             break;
         }
-        imData->name = value.toString();
         emit dataChanged(index, index);
         return true;
     }

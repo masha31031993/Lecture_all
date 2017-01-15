@@ -180,20 +180,6 @@ ApplicationWindow {
                             id: treeView
                             anchors.fill: r_tree
                             model: myModel
-                            //itemDelegate: treeDelegate
-
-                            /*states: [
-                                State {
-                                    name: "inDrag"
-                                    when: index === treeView.draggedItemIndex
-                                    PropertyChanges { target: treeView.section; parent: treeView}
-                                    //PropertyChanges { target: itemTree; anchors.centerIn: undefined }
-                                    PropertyChanges { target: treeView.section.labelPositioning; x: mouseArea_tree.mouseX }
-                                    PropertyChanges { target: treeView.section.labelPositioning; y: mouseArea_tree.mouseY }//- itemTree.height / 2 }
-                                }
-                            ]*/
-
-                            //property var draggItemIndex: -1
 
                             TableViewColumn {
                                 title: "Оглавление"
@@ -235,25 +221,12 @@ ApplicationWindow {
                                         addSubject.visible = myModel.showMenuItem(index_2,2)
                                         addTheme.visible = myModel.showMenuItem(index_2,3)
                                         addImage.visible = myModel.showMenuItem(index_2,4)
+
                                         myModel.setSelIndex(index_2)
                                         menuAdd.popup()
                                     }
                                     break
                                     default: break
-                                    }
-                                }
-                                onPressAndHold: {
-                                    var index = parent.indexAt(mouse.x, mouse.y)
-                                    if (index.valid) {
-                                        treeView.draggItemIndex = myModel.setDragIndex(index)
-                                        //itemTree.text = myModel.data(treeView.draggItemIndex,0)
-                                    }
-                                }
-                                onReleased: {
-                                    if (treeView.draggItemIndex !== -1) {
-                                        var draggedIndex = treeView.draggedItemIndex
-                                        treeView.draggedItemIndex = -1
-                                        //myModel.move(draggedIndex,myModel.indexAt(mouseX, mouseY),1)
                                     }
                                 }
                             }
