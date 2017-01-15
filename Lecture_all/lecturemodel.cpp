@@ -703,40 +703,40 @@ void LectureModel::printImage(QUrl url)
         painter.end();
     }
 }
-void LectureModel::print()
-{
-    DataWrapper* item = static_cast<DataWrapper*>(selectedIndex.internalPointer());
-    QPrinter printer(QPrinter::HighResolution);
-    QPrintDialog *dialog = new QPrintDialog(&printer,0);
+//void LectureModel::print()
+//{
+//    DataWrapper* item = static_cast<DataWrapper*>(selectedIndex.internalPointer());
+//    QPrinter printer(QPrinter::HighResolution);
+//    QPrintDialog *dialog = new QPrintDialog(&printer,0);
 
-    if (item->type == THEME && item->children.count() > 0) {
-        if(dialog->exec() == QDialog::Accepted) {
-            QList<DataWrapper*> images = item->children;
-            QPainter painter(&printer);
-            painter.begin(&printer);
-            int i = 0;
-           while (i<images.count()) {
-                QUrl url = QUrl::fromLocalFile(images[i]->data->name);
-                QPixmap pix;
-                pix.load(url.toLocalFile());
-                QSize size = pix.size();
-                double xscale = printer.pageRect().width()/size.width();
-                double yscale = printer.pageRect().height()/size.height();
-                double scale = qMin(xscale, yscale);
+//    if (item->type == THEME && item->children.count() > 0) {
+//        if(dialog->exec() == QDialog::Accepted) {
+//            QList<DataWrapper*> images = item->children;
+//            QPainter painter(&printer);
+//            painter.begin(&printer);
+//            int i = 0;
+//           while (i<images.count()) {
+//                QUrl url = QUrl::fromLocalFile(images[i]->data->name);
+//                QPixmap pix;
+//                pix.load(url.toLocalFile());
+//                QSize size = pix.size();
+//                double xscale = printer.pageRect().width()/size.width();
+//                double yscale = printer.pageRect().height()/size.height();
+//                double scale = qMin(xscale, yscale);
 
-                painter.scale(scale, scale);
-                painter.drawPixmap(QPoint(0, 0), pix);
+//                painter.scale(scale, scale);
+//                painter.drawPixmap(QPoint(0, 0), pix);
 
-                painter.scale(1/scale, 1/scale);
-                if (i<images.count())
-                    printer.newPage();
+//                painter.scale(1/scale, 1/scale);
+//                if (i<images.count())
+//                    printer.newPage();
 
 
-            }
-            painter.end();
-        }
-    }
-}
+//            }
+//            painter.end();
+//        }
+//    }
+//}
 
 QString LectureModel:: showTag()
 {

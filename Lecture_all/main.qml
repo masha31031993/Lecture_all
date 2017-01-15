@@ -74,11 +74,11 @@ ApplicationWindow {
                 }
 
 
-            MenuItem {
-                id: print_theme
-                text: qsTr("&Печать темы")
-                onTriggered: myModel.print()
-            }
+//            MenuItem {
+//                id: print_theme
+//                text: qsTr("&Печать темы")
+//                onTriggered: myModel.print()
+//            }
         }
     }
 
@@ -243,7 +243,7 @@ ApplicationWindow {
                                         addSubject.visible = myModel.showMenuItem(index_2,2)
                                         addTheme.visible = myModel.showMenuItem(index_2,3)
                                         addImage.visible = myModel.showMenuItem(index_2,4)
-                                        print_theme.visible = myModel.showMenuItem(index_2,4)
+                                        //print_theme.visible = myModel.showMenuItem(index_2,4)
                                         myModel.setSelIndex(index_2)
                                         menuAdd.popup()
                                     }
